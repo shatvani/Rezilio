@@ -1,0 +1,119 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'   # v1.0.0, v1.2.3-beta.1, stb.
+
+env:
+  REGISTRY: ghcr.io
+  API_IMAGE: ghcr.io/${{ github.repository_owner }}/rezilio-api
+  FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/rezilio-frontend
+
+jobs:
+  validate-tag:
+    name: Validate Release Tag
+    runs-on: [ self-hosted, hetzner, linux ]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          TAG="${{ github.ref_name }}"           # pl. v1.0.0
+          VERSION="${TAG#v}"                     # pl. 1.0.0
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+
+      - name: Verify version in Directory.Build.props matches tag
+        run: |
+          PROPS_VERSION=$(grep -oP '(?<=<Version>)[^<]+' Directory.Build.props)
+          TAG_VERSION="${{ steps.version.outputs.version }}"
+          if [ "${PROPS_VERSION}" != "${TAG_VERSION}" ]; then
+            echo "❌ Version mismatch: Directory.Build.props=${PROPS_VERSION}, tag=${TAG_VERSION}"
+            exit 1
+          fi
+          echo "✅ Version ${TAG_VERSION} matches."
+
+      - name: Verify CHANGELOG.md has entry for this version
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          if grep -q "\[${VERSION}\]" CHANGELOG.md; then
+            echo "✅ CHANGELOG.md contains [${VERSION}] entry."
+          else
+            echo "❌ CHANGELOG.md missing [${VERSION}] entry!"
+            exit 1
+          fi
+
+  docker-tag-release:
+    name: Tag Docker Images with Version
+    runs-on: [ self-hosted, hetzner, linux ]
+    needs: validate-tag
+    steps:
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract version
+        id: version
+        run: echo "version=${{ github.ref_name }}" | sed 's/^v//' >> $GITHUB_OUTPUT
+
+      - name: Re-tag API image
+        run: |
+          # A main branch deploy már feltöltötte sha-... taggel
+          # Csak re-taggelünk: sha-... → 1.0.0 + latest
+          docker pull ${{ env.API_IMAGE }}:main
+          docker tag  ${{ env.API_IMAGE }}:main ${{ env.API_IMAGE }}:${{ github.ref_name }}
+          docker tag  ${{ env.API_IMAGE }}:main ${{ env.API_IMAGE }}:latest
+          docker push ${{ env.API_IMAGE }}:${{ github.ref_name }}
+          docker push ${{ env.API_IMAGE }}:latest
+
+      - name: Re-tag Frontend image
+        run: |
+          docker pull ${{ env.FRONTEND_IMAGE }}:main
+          docker tag  ${{ env.FRONTEND_IMAGE }}:main ${{ env.FRONTEND_IMAGE }}:${{ github.ref_name }}
+          docker tag  ${{ env.FRONTEND_IMAGE }}:main ${{ env.FRONTEND_IMAGE }}:latest
+          docker push ${{ env.FRONTEND_IMAGE }}:${{ github.ref_name }}
+          docker push ${{ env.FRONTEND_IMAGE }}:latest
+
+  github-release:
+    name: Create GitHub Release
+    runs-on: [ self-hosted, hetzner, linux ]
+    needs: docker-tag-release
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract release notes from CHANGELOG.md
+        id: changelog
+        run: |
+          VERSION="${{ github.ref_name }}"
+          VERSION_CLEAN="${VERSION#v}"
+
+          # Kicsomagolja az adott verzió szekciót a CHANGELOG.md-ből
+          NOTES=$(awk "/^## \[${VERSION_CLEAN}\]/{found=1; next} found && /^## \[/{exit} found{print}" CHANGELOG.md)
+
+          if [ -z "${NOTES}" ]; then
+            echo "❌ No release notes found for ${VERSION_CLEAN} in CHANGELOG.md"
+            exit 1
+          fi
+
+          # Multiline output GitHub Actions-ba
+          {
+            echo 'notes<<EOF'
+            echo "${NOTES}"
+            echo 'EOF'
+          } >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: "Release ${{ github.ref_name }}"
+          body: ${{ steps.changelog.outputs.notes }}
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}   # v1.0.0-beta.1 → prerelease
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="Rezilio.Api/Rezilio.Api.csproj" />
+    <Project Path="Rezilio.SharedKernel/Rezilio.SharedKernel.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/" />
+  <Folder Name="/test/" />
+</Solution>

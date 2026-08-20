@@ -1,0 +1,167 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  REGISTRY: ghcr.io
+  API_IMAGE: ghcr.io/${{ github.repository_owner }}/rezilio-api
+  FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/rezilio-frontend
+
+jobs:
+  test:
+    name: Run All Tests
+    runs-on: [ self-hosted, hetzner, linux ]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore & Build
+        run: |
+          dotnet restore
+          dotnet build --no-restore --configuration Release
+
+      - name: Run unit tests
+        run: |
+          dotnet test \
+            --no-restore \
+            --configuration Release \
+            --filter "Category=Unit" \
+            --logger "trx;LogFileName=unit-results.xml" \
+            --results-directory ./test-results
+
+      - name: Run integration tests
+        run: |
+          dotnet test \
+            --no-restore \
+            --configuration Release \
+            --filter "Category=Integration" \
+            --logger "trx;LogFileName=integration-results.xml" \
+            --results-directory ./test-results \
+            --timeout 300
+
+      - name: Coverage gate (≥70%)
+        run: |
+          dotnet test \
+            --no-restore \
+            --configuration Release \
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./coverage
+          dotnet tool install --global dotnet-reportgenerator-globaltool || true
+          reportgenerator \
+            -reports:"./coverage/**/coverage.cobertura.xml" \
+            -targetdir:"./coverage/report" \
+            -reporttypes:"TextSummary"
+          COVERAGE=$(grep -oP '(?<=Line coverage: )\d+' ./coverage/report/Summary.txt | head -1)
+          echo "Coverage: ${COVERAGE}%"
+          [ "${COVERAGE}" -ge 70 ] || (echo "❌ Coverage below 70%!" && exit 1)
+
+  docker-build-push:
+    name: Build & Push Docker Images
+    runs-on: [ self-hosted, hetzner, linux ]
+    needs: test
+    outputs:
+      image-tag: ${{ steps.meta.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (API)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.API_IMAGE }}
+          tags: |
+            type=sha,prefix=sha-,format=short
+            type=ref,event=branch
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push API image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./src
+          file: ./src/RiskAnalyzer.Api/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BUILD_VERSION=${{ github.sha }}
+
+      - name: Build and push Frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: |
+            ${{ env.FRONTEND_IMAGE }}:sha-${{ github.sha }}
+            ${{ env.FRONTEND_IMAGE }}:main
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    name: Deploy to Hetzner VPS
+    runs-on: [ self-hosted, hetzner, linux ]
+    needs: docker-build-push
+    environment:
+      name: production
+      url: https://app.rezilio.hu
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write production .env file
+        run: echo "${{ secrets.PROD_ENV_FILE }}" | base64 -d > /tmp/prod.env
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.HETZNER_HOST }}
+          username: ${{ secrets.HETZNER_USER }}
+          key: ${{ secrets.HETZNER_SSH_KEY }}
+          envs: IMAGE_TAG
+          script: |
+            set -e
+
+            # .env frissítése
+            cp /tmp/prod.env /opt/rezilio/.env
+
+            # Docker image-ek frissítése
+            cd /opt/rezilio
+            export API_TAG=sha-${{ github.sha }}
+            export FRONTEND_TAG=sha-${{ github.sha }}
+
+            docker compose -f docker-compose.prod.yml pull rezilio-api rezilio-frontend
+
+            # Zero-downtime rolling restart (Traefik health check alapú)
+            docker compose -f docker-compose.prod.yml up -d --no-deps rezilio-api rezilio-frontend
+
+            # Ellenőrzés: API health check
+            sleep 10
+            curl --fail https://app.rezilio.hu/health || \
+              (echo "❌ Health check failed! Rolling back..." && \
+               docker compose -f docker-compose.prod.yml restart rezilio-api && exit 1)
+
+            echo "✅ Deployment successful: sha-${{ github.sha }}"
+
+      - name: Notify deployment
+        if: always()
+        run: |
+          STATUS="${{ job.status }}"
+          SHA="${{ github.sha }}"
+          echo "Deployment ${STATUS} for commit ${SHA:0:7}"
+          # TODO: Slack/e-mail értesítés (opcionális)
