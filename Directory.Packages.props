@@ -10,5 +10,6 @@
     <PackageVersion Include="WolverineFx" Version="6.29.1" />
     <PackageVersion Include="WolverineFx.Http" Version="6.29.1" />
     <PackageVersion Include="WolverineFx.Postgresql" Version="6.29.1" />
+    <PackageVersion Include="WolverineFx.RuntimeCompilation" Version="6.29.1" />
   </ItemGroup>
 </Project>
