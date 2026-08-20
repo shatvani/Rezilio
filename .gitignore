@@ -118,6 +118,9 @@ secrets.json
 # Docker
 .docker/
 
+# env
+.env
+
 # JetBrains IDEs
 .idea/
 *.sln.iml

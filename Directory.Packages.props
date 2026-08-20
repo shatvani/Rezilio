@@ -4,9 +4,13 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.11" />
     <PackageVersion Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.23.0" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.11" />
-    <PackageVersion Include="WolverineFx" Version="3.9.0" />
-    <PackageVersion Include="WolverineFx.Http" Version="3.9.0" />
+    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
+    <PackageVersion Include="WolverineFx" Version="6.29.1" />
+    <PackageVersion Include="WolverineFx.Http" Version="6.29.1" />
+    <PackageVersion Include="WolverineFx.Postgresql" Version="6.29.1" />
+    <PackageVersion Include="WolverineFx.RuntimeCompilation" Version="6.29.1" />
   </ItemGroup>
 </Project>

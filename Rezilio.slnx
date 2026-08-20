@@ -1,4 +1,13 @@
 <Solution>
+  <Folder Name="/keycloak/">
+    <File Path="rezilio-realm-dev.json" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".env" />
+    <File Path=".env.example" />
+    <File Path="docker-compose.yml" />
+    <File Path="README.md" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="Rezilio.Api/Rezilio.Api.csproj" />
     <Project Path="Rezilio.SharedKernel/Rezilio.SharedKernel.csproj" />
