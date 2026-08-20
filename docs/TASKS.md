@@ -109,9 +109,9 @@
 > **Branch:** `story/0.5-keycloak-oidc`  
 > JWT validáció és claims normalizálás – Keycloak az egyetlen IdP (ADR-012)
 
-- [ ] `Modules/Identity/` struktúra felállítása
+- [x] `Modules/Identity/` struktúra felállítása
 - [ ] Keycloak JWT middleware konfiguráció az API-ban (OpenID Connect, `rezilio` realm)
-- [ ] `keycloak/rezilio-realm-dev.json` — dev realm, user-ek, role-ok, client konfig
+- [x] `keycloak/rezilio-realm-dev.json` — dev realm, user-ek, role-ok, client konfig
 - [ ] Keycloak service hozzáadása `docker-compose.yml`-be
 - [ ] `AppClaims` statikus konstansok (`app:user_id`, `app:tenant_id`, `app:email`, `app:roles`)
 - [ ] `KeycloakClaimsTransformation : IClaimsTransformation` implementáció

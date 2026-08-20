@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/keycloak/">
+    <File Path="rezilio-realm-dev.json" />
+  </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".env" />
     <File Path=".env.example" />
