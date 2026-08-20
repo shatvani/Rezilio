@@ -15,6 +15,25 @@ services:
       timeout: 5s
       retries: 5
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.2
+    command: start-dev --import-realm --log-level=INFO,org.keycloak.exportimport:DEBUG
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      KC_DB_USERNAME: ${POSTGRES_USER}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import
+    ports:
+      - "8090:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: on-failure
+
   api:
     build:
       context: .
@@ -28,6 +47,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    restart: on-failure
 
 volumes:
   postgres_data:
