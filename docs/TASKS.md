@@ -59,17 +59,17 @@
 ---
 
 #### Story 0.3 – EF Core + PostgreSQL alap
-> **Branch:** `story/0.3-efcore-postgresql`  
-> Per-modul DbContext minta, egyetlen PostgreSQL provider (ADR-007)
+> PostgreSQL fix provider, Wolverine outbox, TenantContext alap
 
-- [ ] EF Core 10 + Npgsql NuGet csomagok hozzáadása
-- [ ] `Database:ConnectionString` konfiguráció beolvasása (`appsettings.json`)
-- [ ] `SharedDbContext` alap (tenant és audit mezők)
-- [ ] Per-modul DbContext minta dokumentálva és mintakóddal ellátva
-- [ ] Egyetlen migráció mappa: `Migrations/` (nincs provider-specifikus almappa)
-- [ ] Első migráció elkészítve PostgreSQL-re
-- [ ] `ITenantContext` interface a TenantId lekéréshez
-- [ ] PostgreSQL-specifikus típusok (JSONB, array) szabadon használhatók
+- [x] `Npgsql.EntityFrameworkCore.PostgreSQL` csomag hozzáadása
+- [x] `WolverineFx.Postgresql` csomag hozzáadása
+- [x] `ConnectionStrings:DefaultConnection` konfiguráció (`appsettings.json` + `appsettings.Development.json`)
+- [x] Wolverine outbox bekötése (`opts.PersistMessagesWithPostgresql(...)`)
+- [x] `ITenantContext` interface definiálása (`SharedKernel`-ben)
+- [x] `FixedTenantContext` implementáció (Phase 1: fix `TenantId.Default`)
+- [x] `FixedTenantContext` DI regisztrációja az API projektben
+- [ ] `Migrations/` mappa létrehozása (egyetlen mappa, PostgreSQL only)
+- [ ] Első EF Core migráció előkészítése (csak akkor, ha van már DbContext — Story 0.4-re halasztható)
 
 **Elfogadási kritériumok:**
 - Az alkalmazás elindul, az EF Core migráció lefut, az adatbázis létrejön

@@ -1,12 +1,24 @@
 using Rezilio.Api.Middleware;
 using Wolverine;
 using Wolverine.Http;
+using Wolverine.Postgresql;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("A 'DefaultConnection' connection string nincs beállítva.");
+
+
 builder.Host.UseWolverine(opts =>
 {
-    // Story 0.3: opts.PersistMessagesWithPostgresql(...) — Wolverine outbox
+    // Wolverine outbox
+    // Az outbox tábla ugyanabban az adatbázisban van mint az alkalmazás adatai — így egyetlen tranzakcióba kerül a kettő:
+    // BEGIN TRANSACTION
+    // INSERT INTO risks(...)          ← alkalmazás adata
+    // INSERT INTO wolverine_outbox(...) ← "küldendő" event
+    // COMMIT
+    // Nem lehetséges az az állapot, hogy az adat megvan de az event nincs — mert ha a commit előtt száll el az alkalmazás, a tranzakció visszagörget és mindkettő törlődik.
+    opts.PersistMessagesWithPostgresql(connectionString);
     opts.Policies.AddMiddleware<ModuleAccessBehavior>(
         chain => chain.MessageType?.Namespace?.StartsWith("Rezilio") == true);
 });
