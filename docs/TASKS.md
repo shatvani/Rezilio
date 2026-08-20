@@ -68,8 +68,6 @@
 - [x] `ITenantContext` interface definiálása (`SharedKernel`-ben)
 - [x] `FixedTenantContext` implementáció (Phase 1: fix `TenantId.Default`)
 - [x] `FixedTenantContext` DI regisztrációja az API projektben
-- [ ] `Migrations/` mappa létrehozása (egyetlen mappa, PostgreSQL only)
-- [ ] Első EF Core migráció előkészítése (csak akkor, ha van már DbContext — Story 0.4-re halasztható)
 
 **Elfogadási kritériumok:**
 - Az alkalmazás elindul, az EF Core migráció lefut, az adatbázis létrejön
@@ -87,16 +85,14 @@
 > **Branch:** `story/0.4-docker-compose-dev`  
 > Lokális fejlesztői környezet containerizálva
 
-- [ ] `docker-compose.dev.yml`: API + PostgreSQL + Keycloak service-ek
-- [ ] Keycloak dev realm import: `keycloak/rezilio-realm-dev.json` (dev user-ek, role-ok, client konfig)
-- [ ] `.env.example` fájl az összes szükséges változóval (értékek nélkül)
-- [ ] Health check endpoint az API-n (`/health`)
-- [ ] Adatbázis automatikus migráció induláskor (dev módban)
-- [ ] `README.md` – lokális futtatási útmutató
+- [x] `docker-compose.dev.yml`: API + PostgreSQL + Keycloak service-ek
+- [x] `.env.example` fájl az összes szükséges változóval (értékek nélkül)
+- [x] Health check endpoint az API-n (`/health`)
+- [x] Adatbázis automatikus migráció induláskor (dev módban)
+- [x] `README.md` – lokális futtatási útmutató
 
 **Elfogadási kritériumok:**
 - `docker compose -f docker-compose.dev.yml up` egyetlen paranccsal elindítja az összes service-t
-- A Keycloak Admin Console elérhető (`http://localhost:8080`)
 - Az API `/health` endpointja 200-at ad vissza a containerből
 - Egy dev felhasználóval be lehet jelentkezni Keycloak-ba
 - A README alapján egy új fejlesztő 15 percen belül el tudja indítani a dev környezetet
@@ -115,6 +111,8 @@
 
 - [ ] `Modules/Identity/` struktúra felállítása
 - [ ] Keycloak JWT middleware konfiguráció az API-ban (OpenID Connect, `rezilio` realm)
+- [ ] `keycloak/rezilio-realm-dev.json` — dev realm, user-ek, role-ok, client konfig
+- [ ] Keycloak service hozzáadása `docker-compose.yml`-be
 - [ ] `AppClaims` statikus konstansok (`app:user_id`, `app:tenant_id`, `app:email`, `app:roles`)
 - [ ] `KeycloakClaimsTransformation : IClaimsTransformation` implementáció
   - `sub` → `AppClaims.UserId`
@@ -127,6 +125,7 @@
 
 **Elfogadási kritériumok:**
 - Érvényes Keycloak JWT tokennel védett endpoint elérhető, érvénytelen tokennel 401-et ad
+- A Keycloak Admin Console elérhető (`http://localhost:8080`)
 - `GetCurrentUser` Handler visszaadja az `AppClaims` alapú felhasználói adatokat
 - `[Authorize(Roles = "Admin")]` attribútum helyes szerepkörrel 200-at, nem megfelelővel 403-at ad
 - Handler-ekben közvetlenül `AppClaims` konstansok használatosak (nem Keycloak-specifikus claim nevek)
@@ -517,6 +516,7 @@
 - [ ] `RiskStatus` enum (Draft, Active, UnderReview, Treated, Closed, Archived)
 - [ ] `RiskCategory` value object
 - [ ] `RiskDomain` entitás (IT, Financial, ESG stb.)
+- [ ] `Migrations/` mappa létrehozása
 - [ ] `RisksDbContext` + migráció
 
 **Elfogadási kritériumok:**

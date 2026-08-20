@@ -29,6 +29,15 @@ builder.Services.AddWolverineHttp();
 
 var app = builder.Build();
 
+// Dev módban automatikus migráció – production-ban kézi migráció
+if (app.Environment.IsDevelopment())
+{
+    // Scope nélkül a DbContext nem kérhető le a DI-ból, az async változat pedig a helyes cleanup-ot garantálja
+    await using AsyncServiceScope scope = app.Services.CreateAsyncScope();
+    // TODO Story 0.4: modulonként futtatni a migrációkat, ha lesz DbContext
+    // await scope.ServiceProvider.GetRequiredService<RiskDbContext>().Database.MigrateAsync();
+}
+
 // Configure the HTTP request pipeline.
 app.UseHealthChecks("/healthz");
 // Ez regisztrálja majd a Wolverine HTTP endpoint-okat (Story slice-ok)
