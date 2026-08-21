@@ -8,13 +8,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Lamar.Microsoft.DependencyInjection" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
     <PackageReference Include="WolverineFx.Postgresql" />
     <PackageReference Include="WolverineFx.RuntimeCompilation" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Licensing\Licensing.csproj" />
     <ProjectReference Include="..\Rezilio.SharedKernel\Rezilio.SharedKernel.csproj" />
   </ItemGroup>
 

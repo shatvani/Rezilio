@@ -31,14 +31,18 @@ public sealed class KeycloakClaimsTransformation : IClaimsTransformation
         {
             string? sub = principal.FindFirstValue("sub");
             if (sub is not null)
+            {
                 identity.AddClaim(new Claim(AppClaims.UserId, sub));
+            }
         }
 
         // app:roles → ClaimTypes.Role, hogy az [Authorize(Roles = "...")] működjön
         foreach (Claim roleClaim in principal.FindAll(AppClaims.Roles))
         {
             if (!principal.HasClaim(ClaimTypes.Role, roleClaim.Value))
+            {
                 identity.AddClaim(new Claim(ClaimTypes.Role, roleClaim.Value));
+            }
         }
 
         ClaimsPrincipal result = new(principal);
