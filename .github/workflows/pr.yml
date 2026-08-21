@@ -1,0 +1,194 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  build:
+    name: Build & Format
+    runs-on: [ self-hosted, linux, local ]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Check formatting
+        run: dotnet format --verify-no-changes --verbosity diagnostic
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: [ self-hosted, linux, local ]
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Run unit tests
+        run: |
+          dotnet test \
+            --no-restore \
+            --configuration Release \
+            --filter "Category=Unit" \
+            --logger "trx;LogFileName=unit-test-results.xml" \
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./test-results
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unit-test-results
+          path: ./test-results/**/*.xml
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: [ self-hosted, linux, local ]
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Run integration tests
+        run: |
+          dotnet test \
+            --no-restore \
+            --configuration Release \
+            --filter "Category=Integration" \
+            --logger "trx;LogFileName=integration-test-results.xml" \
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./test-results \
+            --timeout 300
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-test-results
+          path: ./test-results/**/*.xml
+
+  coverage:
+    name: Coverage Gate (≥70%)
+    runs-on: [ self-hosted, linux, local ]
+    needs: [ unit-tests, integration-tests ]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Run all tests with coverage
+        run: |
+          dotnet test \
+            --no-restore \
+            --configuration Release \
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./coverage
+
+      - name: Install ReportGenerator
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool
+
+      - name: Generate coverage report
+        run: |
+          reportgenerator \
+            -reports:"./coverage/**/coverage.cobertura.xml" \
+            -targetdir:"./coverage/report" \
+            -reporttypes:"Cobertura;TextSummary;MarkdownSummaryGithub"
+
+      - name: Check coverage threshold
+        run: |
+          COVERAGE=$(grep -oP '(?<=Line coverage: )\d+' ./coverage/report/Summary.txt | head -1)
+          echo "Line coverage: ${COVERAGE}%"
+          if [ "${COVERAGE}" -lt 70 ]; then
+            echo "❌ Coverage ${COVERAGE}% is below the 70% threshold!"
+            exit 1
+          fi
+          echo "✅ Coverage ${COVERAGE}% meets the 70% threshold."
+
+      - name: Post coverage comment on PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: always()
+        with:
+          recreate: true
+          path: ./coverage/report/SummaryGithub.md
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: ./coverage/report/
+
+  # TODO (Story 0.8): Frontend aktiválás
+  frontend-check:
+    name: Frontend Build & Lint
+    runs-on: [ self-hosted, linux, local ]
+    if: false
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: TypeScript check
+        working-directory: frontend
+        run: npx tsc --noEmit
+      - name: ESLint
+        working-directory: frontend
+        run: npm run lint
+      - name: Next.js build check
+        working-directory: frontend
+        run: npm run build
+
+  changelog-check:
+    name: CHANGELOG.md Updated
+    runs-on: [ self-hosted, linux, local ]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check CHANGELOG.md has [Unreleased] changes
+        run: |
+          if git diff origin/main...HEAD -- CHANGELOG.md | grep -q "^\+"; then
+            echo "✅ CHANGELOG.md was updated in this PR."
+          else
+            echo "❌ CHANGELOG.md was not updated. Please add an entry to the [Unreleased] section."
+            exit 1
+          fi

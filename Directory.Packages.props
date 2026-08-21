@@ -15,5 +15,12 @@
     <PackageVersion Include="WolverineFx.Http" Version="6.29.1" />
     <PackageVersion Include="WolverineFx.Postgresql" Version="6.29.1" />
     <PackageVersion Include="WolverineFx.RuntimeCompilation" Version="6.29.1" />
+
+    <!-- Test -->
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
+    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+    <PackageVersion Include="Testcontainers.PostgreSql" Version="4.2.0" />
   </ItemGroup>
 </Project>
