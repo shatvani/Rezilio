@@ -171,15 +171,15 @@
 > **Branch:** `story/0.7-tenant-settings`  
 > Cross-cutting konfigurációk backend oldala
 
-- [ ] `TenantSettings` aggregate (DefaultCurrency, DefaultLanguage, SupportedLanguages, Locale, TimeZone)
-- [ ] `Money` value object (`Amount decimal` + `CurrencyCode ISO 4217`)
-- [ ] `CurrencyCode` value object (ISO 4217 validáció)
-- [ ] `LanguageCode` value object (BCP 47 validáció)
-- [ ] `GetTenantSettings` Query + Handler
-- [ ] `UpdateTenantSettings` Command + Handler
-- [ ] `AddSupportedLanguage` Command + Handler
-- [ ] `IStringLocalizer<T>` konfiguráció, JSON resource fájlok (`Resources/en.json`, `Resources/hu.json`)
-- [ ] Backend hibaüzenetek lokalizálva (minden `Result` error message localization key)
+- [x] `TenantSettings` aggregate (DefaultCurrency, DefaultLanguage, SupportedLanguages, Locale, TimeZone)
+- [x] `Money` value object (`Amount decimal` + `CurrencyCode ISO 4217`)
+- [x] `CurrencyCode` value object (ISO 4217 validáció)
+- [x] `LanguageCode` value object (BCP 47 validáció)
+- [x] `GetTenantSettings` Query + Handler
+- [x] `UpdateTenantSettings` Command + Handler
+- [x] `AddSupportedLanguage` Command + Handler
+- [x] `IStringLocalizer<T>` konfiguráció, JSON resource fájlok (`Resources/en.json`, `Resources/hu.json`)
+- [x] Backend hibaüzenetek lokalizálva (minden `Result` error message localization key)
 
 **Elfogadási kritériumok:**
 - `Money` value object: összeadás/kivonás azonos pénznemben működik, eltérő pénznemben exception-t dob
