@@ -110,18 +110,18 @@
 > JWT validáció és claims normalizálás – Keycloak az egyetlen IdP (ADR-012)
 
 - [x] `Modules/Identity/` struktúra felállítása
-- [ ] Keycloak JWT middleware konfiguráció az API-ban (OpenID Connect, `rezilio` realm)
+- [x] Keycloak JWT middleware konfiguráció az API-ban (OpenID Connect, `rezilio` realm)
 - [x] `keycloak/rezilio-realm-dev.json` — dev realm, user-ek, role-ok, client konfig
-- [ ] Keycloak service hozzáadása `docker-compose.yml`-be
-- [ ] `AppClaims` statikus konstansok (`app:user_id`, `app:tenant_id`, `app:email`, `app:roles`)
-- [ ] `KeycloakClaimsTransformation : IClaimsTransformation` implementáció
+- [x] Keycloak service hozzáadása `docker-compose.yml`-be
+- [x] `AppClaims` statikus konstansok (`app:user_id`, `app:tenant_id`, `app:email`, `app:roles`)
+- [x] `KeycloakClaimsTransformation : IClaimsTransformation` implementáció
   - `sub` → `AppClaims.UserId`
   - `email` → `AppClaims.Email`
   - `tenant_id` → `AppClaims.TenantId`
   - `realm_access.roles` → `AppClaims.Roles`
 - [ ] `GetCurrentUser` Query + Handler
-- [ ] Role-based authorization policy-k regisztrálása (`Admin`, `RiskManager`, `RiskOwner`, `Auditor`, `Executive`, `Viewer`)
-- [ ] Keycloak dev realm JSON frissítve az összes role-lal
+- [x] Role-based authorization policy-k regisztrálása (`Admin`, `RiskManager`, `RiskOwner`, `Auditor`, `Executive`, `Viewer`)
+- [x] Keycloak dev realm JSON frissítve az összes role-lal
 
 **Elfogadási kritériumok:**
 - Érvényes Keycloak JWT tokennel védett endpoint elérhető, érvénytelen tokennel 401-et ad

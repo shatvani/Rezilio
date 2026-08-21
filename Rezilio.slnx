@@ -13,5 +13,8 @@
     <Project Path="Rezilio.SharedKernel/Rezilio.SharedKernel.csproj" />
   </Folder>
   <Folder Name="/src/Modules/" />
+  <Folder Name="/src/Modules/Licensing/">
+    <Project Path="Licensing/Licensing.csproj" />
+  </Folder>
   <Folder Name="/test/" />
 </Solution>
