@@ -142,17 +142,17 @@
 > **Branch:** `story/0.6-licensing-module`  
 > Tenant licensz kezelése, modul-hozzáférés ellenőrzése
 
-- [ ] `Modules/Licensing/` struktúra felállítása
-- [ ] `TenantLicense` aggregate, `ModuleAccess` value object
-- [ ] `ModuleType` enum (minden modul felsorolva)
-- [ ] `SubscriptionPlan` enum (Basic, Professional, Enterprise)
-- [ ] `CreateTenantLicense` Command + Handler
-- [ ] `GetLicenseStatus` Query
-- [ ] `GetActiveModules` Query
-- [ ] `CheckModuleAccess` – szinkron belső service (middleware hívja)
-- [ ] `ActivateModule` / `DeactivateModule` Command
-- [ ] `StartTrial` Command (14 napos trial logika)
-- [ ] `ModuleActivated` / `TrialExpired` domain event-ek
+- [x] `Modules/Licensing/` struktúra felállítása
+- [x] `TenantLicense` aggregate, `ModuleAccess` value object
+- [x] `ModuleType` enum (minden modul felsorolva)
+- [x] `SubscriptionPlan` enum (Basic, Professional, Enterprise)
+- [x] `CreateTenantLicense` Command + Handler
+- [x] `GetLicenseStatus` Query
+- [x] `GetActiveModules` Query
+- [x] `CheckModuleAccess` – szinkron belső service (middleware hívja)
+- [x] `ActivateModule` / `DeactivateModule` Command
+- [x] `StartTrial` Command (14 napos trial logika)
+- [x] `ModuleActivated` / `TrialExpired` domain event-ek
 
 **Elfogadási kritériumok:**
 - Deaktivált modulhoz tartozó endpoint `403 Forbidden` választ ad `ModuleNotLicensedException`-nel

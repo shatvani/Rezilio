@@ -1,0 +1,9 @@
+{
+  "Errors": {
+    "ModuleNotLicensed": "A(z) '{0}' modul nem aktív ennél a tenantnél.",
+    "TenantSettingsNotFound": "Nem találhatók beállítások ehhez a tenanthoz.",
+    "InvalidCurrencyCode": "Érvénytelen ISO 4217 pénznem kód: '{0}'.",
+    "InvalidLanguageCode": "Érvénytelen BCP 47 nyelvkód: '{0}'.",
+    "DifferentCurrencies": "Nem lehet különböző pénznemeket összeadni: {0} és {1}."
+  }
+}

@@ -105,3 +105,17 @@ ezt hívja meg — nem tudja a modul belső felépítését.
   `IClaimsTransformation`, `AppClaims`
 - **Más moduloktól nem függ** — a többi modul viszont közvetve függ tőle
   a `ModuleAccessBehavior` middleware-en keresztül
+
+## Tesztelés PowerShell-ben
+
+```powershel
+# Token (ha már megvan, kihagyható)
+$token = (Invoke-RestMethod -Uri "http://localhost:8090/realms/rezilio/protocol/openid-connect/token" `
+-Method Post `
+-ContentType "application/x-www-form-urlencoded" `
+-Body "grant_type=password&client_id=rezilio-frontend&username=dev-admin@rezilio.local&password=admin123&scope=openid").access_token
+
+# Aktív modulok lekérése
+Invoke-RestMethod -Uri "http://localhost:5019/api/licensing/modules/00000000-0000-0000-0000-000000000001" `
+-Headers @{ Authorization = "Bearer $token" }
+```

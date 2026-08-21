@@ -1,0 +1,28 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
+using Rezilio.Modules.Organization.Infrastructure;
+using Wolverine.Http;
+
+namespace Rezilio.Modules.Organization.Application.Queries.GetTenantSettings;
+
+public sealed class GetTenantSettingsHandler(OrganizationDbContext db)
+{
+    [WolverineGet("/api/organization/settings/{tenantId}")]
+    [Authorize]
+    public async Task<TenantSettingsResult?> Handle(Guid tenantId, CancellationToken ct)
+    {
+        var settings = await db.TenantSettings
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.TenantId == tenantId, ct);
+
+        if (settings is null) { return null; }
+
+        return new TenantSettingsResult(
+            settings.TenantId,
+            settings.DefaultCurrency.Value,
+            settings.DefaultLanguage.Value,
+            settings.Locale,
+            settings.TimeZone,
+            settings.SupportedLanguages.Select(l => l.Value).ToList());
+    }
+}

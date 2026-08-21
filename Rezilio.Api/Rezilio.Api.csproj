@@ -21,12 +21,17 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Licensing\Licensing.csproj" />
+    <ProjectReference Include="..\Organization\Organization.csproj" />
     <ProjectReference Include="..\Rezilio.SharedKernel\Rezilio.SharedKernel.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="WolverineFx" />
     <PackageReference Include="WolverineFx.Http" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Resources\" />
   </ItemGroup>
 
 </Project>
