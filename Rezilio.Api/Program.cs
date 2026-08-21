@@ -6,6 +6,10 @@ using Rezilio.Api.Middleware;
 using Rezilio.Modules.Licensing;
 using Rezilio.Modules.Licensing.Domain;                      // ← ez kell a TenantLicense, ModuleType, stb.-hez
 using Rezilio.Modules.Licensing.Infrastructure;
+using Rezilio.Modules.Organization;
+using Rezilio.Modules.Organization.Domain;
+using Rezilio.Modules.Organization.Infrastructure;
+using Rezilio.SharedKernel.DDD.VOs;
 using Rezilio.SharedKernel.Multitenancy;
 using Wolverine;
 using Wolverine.Http;
@@ -25,6 +29,7 @@ builder.Host.UseWolverine(opts =>
 
     // Licensing assembly handlereinek beregisztrálása
     opts.Discovery.IncludeAssembly(typeof(LicensingModule).Assembly);
+    opts.Discovery.IncludeAssembly(typeof(OrganizationModule).Assembly);
 
     opts.Policies.AddMiddleware<ModuleAccessBehavior>(
         chain => chain.MessageType?.Namespace?.StartsWith("Rezilio") == true
@@ -51,7 +56,12 @@ builder.Services.AddScoped<ITenantContext, FixedTenantContext>();
 builder.Services.AddHealthChecks();
 builder.Services.AddWolverineHttp();
 
+// --- Licensing ---
 builder.Services.AddLicensingModule(connectionString);
+// --- Organization ---
+builder.Services.AddOrganizationModule(connectionString);
+// --- Lokalizáció ---
+builder.Services.AddLocalization(opts => opts.ResourcesPath = "Resources");
 
 var app = builder.Build();
 
@@ -59,9 +69,14 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     await using var scope = app.Services.CreateAsyncScope();
-    var db = scope.ServiceProvider.GetRequiredService<LicensingDbContext>();
 
+    // Licensing migráció
+    var db = scope.ServiceProvider.GetRequiredService<LicensingDbContext>();
     await db.Database.MigrateAsync();
+
+    // Organization migráció
+    var orgDb = scope.ServiceProvider.GetRequiredService<OrganizationDbContext>();
+    await orgDb.Database.MigrateAsync();
 
     // Dev seed – Enterprise licensz minden modullal
     var devTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
@@ -76,10 +91,32 @@ if (app.Environment.IsDevelopment())
         db.Licenses.Add(license);
         await db.SaveChangesAsync();
     }
+
+    // Organization dev seed
+    bool settingsExist = await orgDb.TenantSettings.AnyAsync(s => s.TenantId == devTenantId);
+    if (!settingsExist)
+    {
+        var settings = TenantSettings.Create(
+            devTenantId,
+            new CurrencyCode("HUF"),
+            new LanguageCode("hu"),
+            locale: "hu-HU",
+            timeZone: "Central European Standard Time");
+        orgDb.TenantSettings.Add(settings);
+        await orgDb.SaveChangesAsync();
+    }
+
     // TODO Story 1.1: RisksDbContext migráció
 }
 
 app.UseHealthChecks("/healthz");
+
+var supportedCultures = new[] { "hu", "en" };
+app.UseRequestLocalization(new RequestLocalizationOptions()
+    .SetDefaultCulture("hu")
+    .AddSupportedCultures(supportedCultures)
+    .AddSupportedUICultures(supportedCultures));
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapWolverineEndpoints();

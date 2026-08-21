@@ -1,0 +1,9 @@
+{
+  "Errors": {
+    "ModuleNotLicensed": "The '{0}' module is not active for this tenant.",
+    "TenantSettingsNotFound": "No settings found for this tenant.",
+    "InvalidCurrencyCode": "Invalid ISO 4217 currency code: '{0}'.",
+    "InvalidLanguageCode": "Invalid BCP 47 language code: '{0}'.",
+    "DifferentCurrencies": "Cannot add amounts in different currencies: {0} and {1}."
+  }
+}

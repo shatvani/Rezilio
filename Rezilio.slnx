@@ -16,5 +16,8 @@
   <Folder Name="/src/Modules/Licensing/">
     <Project Path="Licensing/Licensing.csproj" />
   </Folder>
+  <Folder Name="/src/Modules/Organization/">
+    <Project Path="Organization/Organization.csproj" Id="e48601eb-446d-443a-9c11-a32bb8ae7913" />
+  </Folder>
   <Folder Name="/test/" />
 </Solution>

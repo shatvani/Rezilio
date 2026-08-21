@@ -1,41 +1,30 @@
-using Rezilio.SharedKernel.Results;
-
 namespace Rezilio.SharedKernel.DDD.VOs;
 
-public record Money
+public sealed record Money(decimal Amount, CurrencyCode Currency)
 {
-    public decimal Osszeg { get; init; }
-    public string Penznem { get; init; } = "HUF";
-
-    private Money() { }
-
-    public static Result<Money> Create(decimal osszeg, string penznem = "HUF")
+    public Money Add(Money other)
     {
-        var errors = new List<string>();
-
-        if (osszeg < 0)
-        {
-            errors.Add("Az összeg nem lehet negatív.");
-        }
-
-        if (string.IsNullOrWhiteSpace(penznem))
-        {
-            errors.Add("A pénznem kötelező.");
-        }
-
-        return errors.Count > 0
-            ? Result.Failure<Money>(errors)
-            : Result.Success(new Money { Osszeg = osszeg, Penznem = penznem });
+        EnsureSameCurrency(other);
+        return this with { Amount = Amount + other.Amount };
     }
 
-    public Money Kedvezmenynel(decimal szazalek) =>
-        new() { Osszeg = Math.Round(Osszeg * (1 - szazalek / 100), 2), Penznem = Penznem };
+    public Money Subtract(Money other)
+    {
+        EnsureSameCurrency(other);
+        return this with { Amount = Amount - other.Amount };
+    }
 
-    /// <summary>
-    /// Árindexeléssel módosított összeg.
-    /// arindex = 100 → nincs változás, arindex = 105 → 5%-os emelés.
-    /// Ft-nál egész számra kerekítünk (0 tizedesjegy).
-    /// </summary>
-    public Money ApplyIndex(decimal arindex) =>
-        new() { Osszeg = Math.Round(Osszeg * arindex / 100, 0), Penznem = Penznem };
+    public static Money operator +(Money a, Money b) => a.Add(b);
+    public static Money operator -(Money a, Money b) => a.Subtract(b);
+
+    public override string ToString() => $"{Amount:F2} {Currency}";
+
+    private void EnsureSameCurrency(Money other)
+    {
+        if (Currency != other.Currency)
+        {
+            throw new InvalidOperationException(
+                $"Nem lehet különböző pénznemeket összeadni: {Currency} és {other.Currency}.");
+        }
+    }
 }
