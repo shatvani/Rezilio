@@ -8,6 +8,7 @@ public sealed class OrganizationDbContext : DbContext
     public OrganizationDbContext(DbContextOptions<OrganizationDbContext> options) : base(options) { }
 
     public DbSet<TenantSettings> TenantSettings => Set<TenantSettings>();
+    public DbSet<ImportJob> ImportJobs => Set<ImportJob>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

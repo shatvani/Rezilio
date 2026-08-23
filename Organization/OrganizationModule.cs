@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Rezilio.Modules.Organization.Application.Services;
 using Rezilio.Modules.Organization.Infrastructure;
+using Rezilio.Modules.Organization.Infrastructure.Excel;
 
 namespace Rezilio.Modules.Organization;
 
@@ -16,6 +18,13 @@ public static class OrganizationModule
 
         services.AddSingleton(dbContextOptions);
         services.AddScoped<OrganizationDbContext>();
+
+        // Excel infrastruktúra
+        services.AddScoped<IExcelTemplateGenerator, ExcelTemplateGenerator>();
+        services.AddScoped<IExcelImportParser, ExcelImportParser>();
+
+        // Column definition providerek (ORG.3–ORG.9 bővíti)
+        // Jelenleg üres – az egyes entity story-k regisztrálják a saját providereiket
 
         return services;
     }
