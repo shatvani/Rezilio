@@ -27,6 +27,8 @@ Részletes specifikáció: `docs/SPEC.md`
 - **Next.js 14+** (App Router)
 - **TanStack Query** – szerver állapot kezelés
 - **next-intl** – i18n, dinamikusan bővíthető JSON nyelvi fájlok
+- **Tailwind CSS** – utility-first CSS framework
+- **shadcn/ui** – komponens könyvtár (copy-paste alapú, nem npm függőség)
 - **Recharts / Nivo** – vizualizáció (kockázati hőtérkép, KRI trendek)
 - **TypeScript** – kötelező minden fájlban
 
