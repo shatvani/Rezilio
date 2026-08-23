@@ -22,6 +22,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Licensing\Licensing.csproj" />
+        <ProjectReference Include="..\Organization\Organization.csproj" />
         <ProjectReference Include="..\Rezilio.SharedKernel\Rezilio.SharedKernel.csproj" />
     </ItemGroup>
 </Project>

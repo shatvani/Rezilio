@@ -17,3 +17,8 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 [Unreleased]: https://github.com/shatvani/Rezilio/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/shatvani/Rezilio/releases/tag/v0.1.0
+
+## [Unreleased]
+
+### Added
+- Story ORG.1: Organization modul bővítése – `ImportJob` aggregate, `EntityType` és `ImportJobStatus` enum-ok, `ImportRowResult` value object, domain event-ek (`ImportJobCreated`, `ImportJobCompleted`, `ImportJobFailed`), EF Core mapping, `AddImportJob` migráció

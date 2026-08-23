@@ -208,6 +208,9 @@
 - [ ] Protected route wrapper
 - [ ] API kliens alap (`lib/api-client.ts`)
 - [ ] "Upgrade szükséges" komponens (deaktivált modulhoz, lokalizálva)
+- [ ] Tailwind CSS konfiguráció ellenőrzése (`tailwind.config.ts`, `globals.css`)
+- [ ] shadcn/ui inicializálása (`npx shadcn@latest init`)
+- [ ] Alap shadcn/ui komponensek telepítése: `Button`, `Card`, `Badge`, `Separator`
 
 **Elfogadási kritériumok:**
 - Bejelentkező gomb Keycloak login page-re navigál, sikeres login után visszairányít az alkalmazásba

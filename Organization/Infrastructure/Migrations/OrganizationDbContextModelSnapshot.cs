@@ -22,6 +22,47 @@ namespace Organization.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Rezilio.Modules.Organization.Domain.ImportJob", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ErrorRows")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("SuccessRows")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("TotalRows")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TenantId", "EntityType");
+
+                    b.ToTable("import_jobs", (string)null);
+                });
+
             modelBuilder.Entity("Rezilio.Modules.Organization.Domain.TenantSettings", b =>
                 {
                     b.Property<Guid>("Id")
@@ -50,6 +91,38 @@ namespace Organization.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("tenant_settings", (string)null);
+                });
+
+            modelBuilder.Entity("Rezilio.Modules.Organization.Domain.ImportJob", b =>
+                {
+                    b.OwnsMany("Rezilio.Modules.Organization.Domain.ImportRowResult", "Results", b1 =>
+                        {
+                            b1.Property<Guid>("ImportJobId");
+
+                            b1.Property<int>("__synthesizedOrdinal")
+                                .ValueGeneratedOnAdd();
+
+                            b1.Property<string>("ColumnName");
+
+                            b1.Property<string>("ErrorMessage");
+
+                            b1.Property<bool>("IsSuccess");
+
+                            b1.Property<int>("RowNumber");
+
+                            b1.HasKey("ImportJobId", "__synthesizedOrdinal");
+
+                            b1.ToTable("import_jobs");
+
+                            b1
+                                .ToJson("results")
+                                .HasColumnType("jsonb");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ImportJobId");
+                        });
+
+                    b.Navigation("Results");
                 });
 
             modelBuilder.Entity("Rezilio.Modules.Organization.Domain.TenantSettings", b =>
