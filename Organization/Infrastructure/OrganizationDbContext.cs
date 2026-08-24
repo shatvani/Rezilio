@@ -9,6 +9,7 @@ public sealed class OrganizationDbContext : DbContext
 
     public DbSet<TenantSettings> TenantSettings => Set<TenantSettings>();
     public DbSet<ImportJob> ImportJobs => Set<ImportJob>();
+    public DbSet<OrganizationalUnit> OrganizationalUnits => Set<OrganizationalUnit>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -51,6 +52,7 @@ public sealed class OrganizationDbContext : DbContext
             entity.Property(e => e.ErrorRows).IsRequired();
             entity.Property(e => e.CreatedAt).IsRequired();
             entity.Property(e => e.CompletedAt);
+            entity.Property(e => e.FileContent).IsRequired();
 
             // ImportRowResult lista → JSONB (PostgreSQL)
             entity.OwnsMany(e => e.Results, owned =>
@@ -64,6 +66,21 @@ public sealed class OrganizationDbContext : DbContext
 
             entity.HasIndex(e => e.TenantId);
             entity.HasIndex(e => new { e.TenantId, e.EntityType });
+        });
+
+        // --- OrganizationalUnit ---
+        modelBuilder.Entity<OrganizationalUnit>(entity =>
+        {
+            entity.ToTable("organizational_units");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.TenantId).IsRequired();
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Code).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.ParentId);
+            entity.Property(e => e.Description).HasMaxLength(1000);
+
+            entity.HasIndex(e => new { e.TenantId, e.Code }).IsUnique();
+            entity.HasIndex(e => e.TenantId);
         });
     }
 }

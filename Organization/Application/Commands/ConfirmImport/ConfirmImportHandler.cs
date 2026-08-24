@@ -2,13 +2,16 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Rezilio.Modules.Organization.Application.Services;
 using Rezilio.Modules.Organization.Domain;
 using Rezilio.Modules.Organization.Infrastructure;
 using Wolverine.Http;
 
 namespace Rezilio.Modules.Organization.Application.Commands.ConfirmImport;
 
-public sealed class ConfirmImportHandler(OrganizationDbContext db)
+public sealed class ConfirmImportHandler(
+    OrganizationDbContext db,
+    IExcelImportParser parser)
 {
     [WolverinePost("/api/organization/import/{importJobId}/confirm")]
     [Authorize]
@@ -29,9 +32,7 @@ public sealed class ConfirmImportHandler(OrganizationDbContext db)
 
         try
         {
-            // TODO (ORG.3–ORG.9): EntityType-specifikus import logika ide kerül
-            // pl.: await _importDispatcher.ImportAsync(job, ct);
-
+            await ImportEntitiesAsync(job, ct);
             job.Complete();
             await db.SaveChangesAsync(ct);
 
@@ -43,5 +44,58 @@ public sealed class ConfirmImportHandler(OrganizationDbContext db)
             await db.SaveChangesAsync(ct);
             return Results.Problem($"Import meghiúsult: {ex.Message}");
         }
+    }
+
+    private async Task ImportEntitiesAsync(ImportJob job, CancellationToken ct)
+    {
+        if (job.EntityType == EntityType.OrganizationalUnit)
+        {
+            await ImportOrganizationalUnitsAsync(job, ct);
+        }
+        else
+        {
+            throw new NotSupportedException(
+                $"EntityType '{job.EntityType}' importja még nem implementált.");
+        }
+    }
+
+    private async Task ImportOrganizationalUnitsAsync(ImportJob job, CancellationToken ct)
+    {
+        // Fájl újraparse-olása
+        IReadOnlyList<ParsedRow> rows = parser.Parse(job.FileContent, job.EntityType);
+
+        // Meglévő egységek kód → Id map (szülő feloldáshoz)
+        var existingByCode = await db.OrganizationalUnits
+            .Where(u => u.TenantId == job.TenantId)
+            .ToDictionaryAsync(u => u.Code, u => u.Id, ct);
+
+        foreach (ParsedRow row in rows.Where(r => r.IsValid))
+        {
+            string name = row.Values["Name"]!;
+            string code = row.Values["Code"]!;
+
+            row.Values.TryGetValue("ParentCode", out string? parentCode);
+            row.Values.TryGetValue("Description", out string? description);
+
+            Guid? parentId = null;
+            if (!string.IsNullOrWhiteSpace(parentCode))
+            {
+                string parentCodeUpper = parentCode.Trim().ToUpperInvariant();
+                if (existingByCode.TryGetValue(parentCodeUpper, out Guid pid))
+                {
+                    parentId = pid;
+                }
+                // Ha a szülő nem létezik → figyelmeztetés nélkül folytatjuk (ParentCode opcionális)
+            }
+
+            var unit = OrganizationalUnit.Create(job.TenantId, name, code, parentId, description);
+            db.OrganizationalUnits.Add(unit);
+
+            // Frissen létrehozott egységet is felvesszük a mapbe
+            // (ha egy import fájlon belül hierarchia van, a következő sorok megtalálják)
+            existingByCode[unit.Code] = unit.Id;
+        }
+
+        await db.SaveChangesAsync(ct);
     }
 }

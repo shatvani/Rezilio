@@ -6,6 +6,11 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Added
+- Story ORG.1: Organization modul bővítése – `ImportJob` aggregate, `EntityType` és `ImportJobStatus` enum-ok, `ImportRowResult` value object, domain event-ek (`ImportJobCreated`, `ImportJobCompleted`, `ImportJobFailed`), EF Core mapping, `AddImportJob` migráció
+- Story ORG.2: Excel import infrastruktúra – `IExcelTemplateGenerator`, `IExcelImportParser`, `IImportColumnDefinitionProvider` interfészek, ClosedXML alapú implementáció, sor-szintű validációs pipeline, Wolverine HTTP endpointok (template letöltés, feltöltés+validálás, megerősítés, státusz, eredmények)
+- Story ORG.3: `OrganizationalUnit` aggregate (`Name`, `Code`, `ParentId?`, `Description?`), CRUD endpointok, Excel template + import pipeline, `ImportJob.FileContent byte[]` tárolás a confirm fázishoz, `AddOrganizationalUnit` és `AddImportJobFileContent` migrációk
+
 ## [0.1.0] - 2026-08-21
 
 ### Added
@@ -17,13 +22,3 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 [Unreleased]: https://github.com/shatvani/Rezilio/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/shatvani/Rezilio/releases/tag/v0.1.0
-
-## [Unreleased]
-
-### Added
-- Story ORG.1: Organization modul bővítése – `ImportJob` aggregate, `EntityType` és `ImportJobStatus` enum-ok, `ImportRowResult` value object, domain event-ek (`ImportJobCreated`, `ImportJobCompleted`, `ImportJobFailed`), EF Core mapping, `AddImportJob` migráció
-
-## [Unreleased]
-
-### Added
-- Story ORG.2: Excel import infrastruktúra – `IExcelTemplateGenerator`, `IExcelImportParser`, `IImportColumnDefinitionProvider` interfészek, ClosedXML alapú implementáció, sor-szintű validációs pipeline, Wolverine HTTP endpointok (template letöltés, feltöltés+validálás, megerősítés, státusz, eredmények)

@@ -1,0 +1,33 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Rezilio.Modules.Organization.Domain;
+using Rezilio.Modules.Organization.Infrastructure;
+using Wolverine.Http;
+
+namespace Rezilio.Modules.Organization.Application.Commands.UpdateOrganizationalUnit;
+
+public sealed class UpdateOrganizationalUnitHandler(OrganizationDbContext db)
+{
+    [WolverinePut("/api/organization/units/{id}")]
+    [Authorize]
+    public async Task<IResult> Handle(
+        [FromRoute] Guid id,
+        UpdateOrganizationalUnitCommand command,
+        CancellationToken ct)
+    {
+        OrganizationalUnit? unit = await db.OrganizationalUnits
+            .FirstOrDefaultAsync(u => u.Id == id, ct);
+
+        if (unit is null)
+        {
+            return Results.NotFound();
+        }
+
+        unit.Update(command.Name, command.Code, command.ParentId, command.Description);
+        await db.SaveChangesAsync(ct);
+
+        return Results.NoContent();
+    }
+}
