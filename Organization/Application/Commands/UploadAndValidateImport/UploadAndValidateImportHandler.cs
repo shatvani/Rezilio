@@ -35,7 +35,7 @@ public sealed class UploadAndValidateImportHandler(
 
         // ImportJob létrehozása
         Guid tenantId = tenantContext.TenantId;
-        ImportJob job = ImportJob.Create(tenantId, entityType);
+        ImportJob job = ImportJob.Create(tenantId, entityType, fileContent);
         db.ImportJobs.Add(job);
         await db.SaveChangesAsync(ct);
 

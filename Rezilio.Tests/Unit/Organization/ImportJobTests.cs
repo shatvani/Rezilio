@@ -14,7 +14,7 @@ public class ImportJobTests
     [Trait("Category", "Unit")]
     public void Create_SetsStatusToPending_AndRaisesImportJobCreatedEvent()
     {
-        ImportJob job = ImportJob.Create(TenantId, EntityType.OrganizationalUnit);
+        ImportJob job = ImportJob.Create(TenantId, EntityType.OrganizationalUnit, []);
 
         Assert.Equal(ImportJobStatus.Pending, job.Status);
         Assert.Equal(TenantId, job.TenantId);
@@ -28,7 +28,7 @@ public class ImportJobTests
     [Trait("Category", "Unit")]
     public void CompleteValidation_WithNoErrors_SetsStatusToValid()
     {
-        ImportJob job = ImportJob.Create(TenantId, EntityType.Location);
+        ImportJob job = ImportJob.Create(TenantId, EntityType.Location, []);
         job.StartValidation();
 
         var results = new[]
@@ -51,7 +51,7 @@ public class ImportJobTests
     [Trait("Category", "Unit")]
     public void CompleteValidation_WithErrors_SetsStatusToInvalid()
     {
-        ImportJob job = ImportJob.Create(TenantId, EntityType.Customer);
+        ImportJob job = ImportJob.Create(TenantId, EntityType.Customer, []);
         job.StartValidation();
 
         var results = new[]
@@ -72,7 +72,7 @@ public class ImportJobTests
     [Trait("Category", "Unit")]
     public void Complete_AfterImporting_SetsStatusToCompleted_AndRaisesEvent()
     {
-        ImportJob job = ImportJob.Create(TenantId, EntityType.Supplier);
+        ImportJob job = ImportJob.Create(TenantId, EntityType.Supplier, []);
         job.StartValidation();
         job.CompleteValidation([new ImportRowResult(1, IsSuccess: true)]);
         job.StartImport();
@@ -89,7 +89,7 @@ public class ImportJobTests
     [Trait("Category", "Unit")]
     public void Fail_DuringImporting_SetsStatusToFailed_AndRaisesEvent()
     {
-        ImportJob job = ImportJob.Create(TenantId, EntityType.ItSystem);
+        ImportJob job = ImportJob.Create(TenantId, EntityType.ItSystem, []);
         job.StartValidation();
         job.CompleteValidation([new ImportRowResult(1, IsSuccess: true)]);
         job.StartImport();
@@ -105,7 +105,7 @@ public class ImportJobTests
     [Trait("Category", "Unit")]
     public void StartImport_FromInvalidStatus_ThrowsInvalidOperationException()
     {
-        ImportJob job = ImportJob.Create(TenantId, EntityType.BusinessProcess);
+        ImportJob job = ImportJob.Create(TenantId, EntityType.BusinessProcess, []);
         job.StartValidation();
         job.CompleteValidation([new ImportRowResult(1, IsSuccess: false, ErrorMessage: "Hiba")]);
 

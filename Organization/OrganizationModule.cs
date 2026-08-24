@@ -23,8 +23,8 @@ public static class OrganizationModule
         services.AddScoped<IExcelTemplateGenerator, ExcelTemplateGenerator>();
         services.AddScoped<IExcelImportParser, ExcelImportParser>();
 
-        // Column definition providerek (ORG.3–ORG.9 bővíti)
-        // Jelenleg üres – az egyes entity story-k regisztrálják a saját providereiket
+        // Column definition providerek
+        services.AddScoped<IImportColumnDefinitionProvider, OrganizationalUnitColumnDefinitionProvider>();
 
         return services;
     }

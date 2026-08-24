@@ -13,6 +13,7 @@ public sealed class ImportJob : AggregateRoot<Guid>
     public int ErrorRows { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset? CompletedAt { get; private set; }
+    public byte[] FileContent { get; private set; } = [];   // ← ÚJ
 
     private readonly List<ImportRowResult> _results = [];
     public IReadOnlyList<ImportRowResult> Results => _results.AsReadOnly();
@@ -20,7 +21,7 @@ public sealed class ImportJob : AggregateRoot<Guid>
     // EF Core proxy ctor
     private ImportJob() { }
 
-    public static ImportJob Create(Guid tenantId, EntityType entityType)
+    public static ImportJob Create(Guid tenantId, EntityType entityType, byte[] fileContent)  // ← fileContent
     {
         var job = new ImportJob
         {
@@ -28,21 +29,20 @@ public sealed class ImportJob : AggregateRoot<Guid>
             TenantId = tenantId,
             EntityType = entityType,
             Status = ImportJobStatus.Pending,
-            CreatedAt = DateTimeOffset.UtcNow
+            CreatedAt = DateTimeOffset.UtcNow,
+            FileContent = fileContent                        // ← ÚJ
         };
 
         job.RaiseDomainEvent(new ImportJobCreated(job.Id, tenantId, entityType));
         return job;
     }
 
-    /// <summary>Validáció megkezdése.</summary>
     public void StartValidation()
     {
         EnsureStatus(ImportJobStatus.Pending);
         Status = ImportJobStatus.Validating;
     }
 
-    /// <summary>Validáció eredménye: sikeres sorok + hibás sorok.</summary>
     public void CompleteValidation(IEnumerable<ImportRowResult> results)
     {
         EnsureStatus(ImportJobStatus.Validating);
@@ -55,14 +55,12 @@ public sealed class ImportJob : AggregateRoot<Guid>
         Status = ErrorRows == 0 ? ImportJobStatus.Valid : ImportJobStatus.Invalid;
     }
 
-    /// <summary>Tényleges adatbetöltés megkezdése — csak Valid állapotból.</summary>
     public void StartImport()
     {
         EnsureStatus(ImportJobStatus.Valid);
         Status = ImportJobStatus.Importing;
     }
 
-    /// <summary>Import sikeresen lezárult.</summary>
     public void Complete()
     {
         EnsureStatus(ImportJobStatus.Importing);
@@ -72,7 +70,6 @@ public sealed class ImportJob : AggregateRoot<Guid>
         RaiseDomainEvent(new ImportJobCompleted(Id, TenantId, EntityType, TotalRows, SuccessRows));
     }
 
-    /// <summary>Import váratlan hibával meghiúsult.</summary>
     public void Fail(string reason)
     {
         if (Status is not (ImportJobStatus.Validating or ImportJobStatus.Importing))

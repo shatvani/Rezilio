@@ -41,6 +41,10 @@ namespace Organization.Infrastructure.Migrations
                     b.Property<int>("ErrorRows")
                         .HasColumnType("integer");
 
+                    b.Property<byte[]>("FileContent")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("text");
@@ -61,6 +65,42 @@ namespace Organization.Infrastructure.Migrations
                     b.HasIndex("TenantId", "EntityType");
 
                     b.ToTable("import_jobs", (string)null);
+                });
+
+            modelBuilder.Entity("Rezilio.Modules.Organization.Domain.OrganizationalUnit", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid?>("ParentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TenantId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("organizational_units", (string)null);
                 });
 
             modelBuilder.Entity("Rezilio.Modules.Organization.Domain.TenantSettings", b =>
