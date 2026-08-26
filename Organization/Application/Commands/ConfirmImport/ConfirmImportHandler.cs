@@ -52,6 +52,10 @@ public sealed class ConfirmImportHandler(
         {
             await ImportOrganizationalUnitsAsync(job, ct);
         }
+        else if (job.EntityType == EntityType.Customer)
+        {
+            await ImportCustomersAsync(job, ct);
+        }
         else
         {
             throw new NotSupportedException(
@@ -94,6 +98,41 @@ public sealed class ConfirmImportHandler(
             // Frissen létrehozott egységet is felvesszük a mapbe
             // (ha egy import fájlon belül hierarchia van, a következő sorok megtalálják)
             existingByCode[unit.Code] = unit.Id;
+        }
+
+        await db.SaveChangesAsync(ct);
+    }
+
+    private async Task ImportCustomersAsync(ImportJob job, CancellationToken ct)
+    {
+        IReadOnlyList<ParsedRow> rows = parser.Parse(job.FileContent, job.EntityType);
+        var existingCodes = await db.Customers
+            .Where(c => c.TenantId == job.TenantId)
+            .Select(c => c.Code)
+            .ToHashSetAsync(ct);
+
+        foreach (ParsedRow row in rows.Where(r => r.IsValid))
+        {
+            string name = row.Values["Name"]!;
+            string code = row.Values["Code"]!;
+            row.Values.TryGetValue("Industry", out string? industry);
+            row.Values.TryGetValue("Country", out string? country);
+            row.Values.TryGetValue("ContactEmail", out string? contactEmail);
+            row.Values.TryGetValue("ContactPhone", out string? contactPhone);
+            row.Values.TryGetValue("Description", out string? description);
+
+            string normalizedCode = code.Trim().ToUpperInvariant();
+            if (existingCodes.Contains(normalizedCode))
+            {
+                continue;
+            }
+
+            var customer = Customer.Create(
+                job.TenantId, name, code,
+                industry, country, contactEmail, contactPhone, description);
+
+            db.Customers.Add(customer);
+            existingCodes.Add(normalizedCode);
         }
 
         await db.SaveChangesAsync(ct);

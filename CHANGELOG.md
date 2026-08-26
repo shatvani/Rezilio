@@ -10,6 +10,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 - Story ORG.1: Organization modul bővítése – `ImportJob` aggregate, `EntityType` és `ImportJobStatus` enum-ok, `ImportRowResult` value object, domain event-ek (`ImportJobCreated`, `ImportJobCompleted`, `ImportJobFailed`), EF Core mapping, `AddImportJob` migráció
 - Story ORG.2: Excel import infrastruktúra – `IExcelTemplateGenerator`, `IExcelImportParser`, `IImportColumnDefinitionProvider` interfészek, ClosedXML alapú implementáció, sor-szintű validációs pipeline, Wolverine HTTP endpointok (template letöltés, feltöltés+validálás, megerősítés, státusz, eredmények)
 - Story ORG.3: `OrganizationalUnit` aggregate (`Name`, `Code`, `ParentId?`, `Description?`), CRUD endpointok, Excel template + import pipeline, `ImportJob.FileContent byte[]` tárolás a confirm fázishoz, `AddOrganizationalUnit` és `AddImportJobFileContent` migrációk
+- Story ORG.5: `Customer` aggregate (`Name`, `Code`, `Industry?`, `Country?`, `ContactEmail?`, `ContactPhone?`, `Description?`), CRUD endpointok, Excel template + import pipeline, `AddCustomer` migráció
 
 ## [0.1.0] - 2026-08-21
 
