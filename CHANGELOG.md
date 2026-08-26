@@ -13,6 +13,7 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 - Story ORG.5: `Customer` aggregate (`Name`, `Code`, `Industry?`, `Country?`, `ContactEmail?`, `ContactPhone?`, `Description?`), CRUD endpointok, Excel template + import pipeline, `AddCustomer` migráció
 - Story ORG.6: `Supplier` aggregate (`Name`, `Code`, `Industry?`, `Country?`, `ContactEmail?`, `ContactPhone?`, `Description?`), CRUD endpointok, Excel template + import pipeline, `AddSupplier` migráció
 - Chore: `Microsoft.EntityFrameworkCore.Relational` explicit pinelve 10.0.11-re a `Rezilio.Tests`-ben az EF verziókonfliktus megszüntetéséhez
+- Story ORG.7: KeyPerson aggregate – Name, Title?, Department?, OrgUnitId?, Email?, Phone?, BackupPersonName?, Description? mezők; CRUD endpointok; Excel template + import pipeline (OrgUnitCode → OrgUnitId feloldással); `AddKeyPerson` migráció
 
 ## [0.1.0] - 2026-08-21
 
