@@ -60,6 +60,10 @@ public sealed class ConfirmImportHandler(
         {
             await ImportSuppliersAsync(job, ct);
         }
+        else if (job.EntityType == EntityType.KeyPerson)
+        {
+            await ImportKeyPersonsAsync(job, ct);
+        }
         else
         {
             throw new NotSupportedException(
@@ -172,6 +176,44 @@ public sealed class ConfirmImportHandler(
 
             db.Suppliers.Add(supplier);
             existingCodes.Add(normalizedCode);
+        }
+
+        await db.SaveChangesAsync(ct);
+    }
+
+    private async Task ImportKeyPersonsAsync(ImportJob job, CancellationToken ct)
+    {
+        IReadOnlyList<ParsedRow> rows = parser.Parse(job.FileContent, job.EntityType);
+        var orgUnitsByCode = await db.OrganizationalUnits
+            .Where(u => u.TenantId == job.TenantId)
+            .ToDictionaryAsync(u => u.Code, u => u.Id, ct);
+
+        foreach (ParsedRow row in rows.Where(r => r.IsValid))
+        {
+            string name = row.Values["Name"]!;
+            row.Values.TryGetValue("Title", out string? title);
+            row.Values.TryGetValue("Department", out string? department);
+            row.Values.TryGetValue("OrgUnitCode", out string? orgUnitCode);
+            row.Values.TryGetValue("Email", out string? email);
+            row.Values.TryGetValue("Phone", out string? phone);
+            row.Values.TryGetValue("BackupPersonName", out string? backupPersonName);
+            row.Values.TryGetValue("Description", out string? description);
+
+            Guid? orgUnitId = null;
+            if (!string.IsNullOrWhiteSpace(orgUnitCode))
+            {
+                string normalized = orgUnitCode.Trim().ToUpperInvariant();
+                if (orgUnitsByCode.TryGetValue(normalized, out Guid uid))
+                {
+                    orgUnitId = uid;
+                }
+            }
+
+            var keyPerson = KeyPerson.Create(
+                job.TenantId, name, title, department,
+                orgUnitId, email, phone, backupPersonName, description);
+
+            db.KeyPersons.Add(keyPerson);
         }
 
         await db.SaveChangesAsync(ct);

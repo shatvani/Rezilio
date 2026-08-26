@@ -12,6 +12,8 @@ public sealed class OrganizationDbContext : DbContext
     public DbSet<OrganizationalUnit> OrganizationalUnits => Set<OrganizationalUnit>();
     public DbSet<Customer> Customers => Set<Customer>();
     public DbSet<Supplier> Suppliers => Set<Supplier>();
+    public DbSet<KeyPerson> KeyPersons => Set<KeyPerson>();
+    
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -113,6 +115,21 @@ public sealed class OrganizationDbContext : DbContext
             entity.Property(e => e.Description).HasMaxLength(500);
             entity.HasIndex(e => e.TenantId);
             entity.HasIndex(e => new { e.TenantId, e.Code }).IsUnique();
+        });
+
+        modelBuilder.Entity<KeyPerson>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.TenantId).IsRequired();
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Title).HasMaxLength(100);
+            entity.Property(e => e.Department).HasMaxLength(100);
+            entity.Property(e => e.Email).HasMaxLength(200);
+            entity.Property(e => e.Phone).HasMaxLength(50);
+            entity.Property(e => e.BackupPersonName).HasMaxLength(200);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => new { e.TenantId, e.OrgUnitId });
         });
     }
 }

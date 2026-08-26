@@ -27,6 +27,7 @@ public static class OrganizationModule
         services.AddScoped<IImportColumnDefinitionProvider, OrganizationalUnitColumnDefinitionProvider>();
         services.AddScoped<IImportColumnDefinitionProvider, CustomerColumnDefinitionProvider>();
         services.AddScoped<IImportColumnDefinitionProvider, SupplierColumnDefinitionProvider>();
+        services.AddScoped<IImportColumnDefinitionProvider, KeyPersonColumnDefinitionProvider>();
 
         return services;
     }
