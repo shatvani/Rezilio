@@ -11,6 +11,7 @@ public sealed class OrganizationDbContext : DbContext
     public DbSet<ImportJob> ImportJobs => Set<ImportJob>();
     public DbSet<OrganizationalUnit> OrganizationalUnits => Set<OrganizationalUnit>();
     public DbSet<Customer> Customers => Set<Customer>();
+    public DbSet<Supplier> Suppliers => Set<Supplier>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -85,6 +86,21 @@ public sealed class OrganizationDbContext : DbContext
         });
 
         modelBuilder.Entity<Customer>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.TenantId).IsRequired();
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Code).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Industry).HasMaxLength(100);
+            entity.Property(e => e.Country).HasMaxLength(100);
+            entity.Property(e => e.ContactEmail).HasMaxLength(200);
+            entity.Property(e => e.ContactPhone).HasMaxLength(50);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => new { e.TenantId, e.Code }).IsUnique();
+        });
+
+        modelBuilder.Entity<Supplier>(entity =>
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.TenantId).IsRequired();
