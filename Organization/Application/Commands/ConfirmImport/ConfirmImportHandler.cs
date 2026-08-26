@@ -6,6 +6,7 @@ using Organization.Domain;
 using Rezilio.Modules.Organization.Application.Services;
 using Rezilio.Modules.Organization.Domain;
 using Rezilio.Modules.Organization.Infrastructure;
+using Rezilio.SharedKernel.Results;
 using Wolverine.Http;
 
 namespace Rezilio.Modules.Organization.Application.Commands.ConfirmImport;
@@ -68,6 +69,10 @@ public sealed class ConfirmImportHandler(
         else if (job.EntityType == EntityType.ItSystem)
         {
             await ImportItSystemsAsync(job, ct);
+        }
+        else if (job.EntityType == EntityType.BusinessProcess)
+        {
+            await ImportBusinessProcessesAsync(job, ct);
         }
         else
         {
@@ -302,6 +307,93 @@ public sealed class ConfirmImportHandler(
                     row.Values.GetValueOrDefault("Vendor"),
                     row.Values.GetValueOrDefault("Version"),
                     ownerId, supportedOrgUnitIds);
+            }
+        }
+
+        await db.SaveChangesAsync(ct);
+    }
+
+    private async Task ImportBusinessProcessesAsync(ImportJob job, CancellationToken ct)
+    {
+        IReadOnlyList<ParsedRow> rows = parser.Parse(job.FileContent, job.EntityType);
+
+        Dictionary<string, Guid> orgUnitsByCode = await db.OrganizationalUnits
+            .Where(u => u.TenantId == job.TenantId)
+            .ToDictionaryAsync(u => u.Code, u => u.Id, ct);
+
+        Dictionary<string, Guid> keyPersonsByName = await db.KeyPersons
+            .Where(k => k.TenantId == job.TenantId)
+            .ToDictionaryAsync(k => k.Name, k => k.Id, ct);
+
+        Dictionary<string, Guid> itSystemsByCode = await db.ItSystems
+            .Where(s => s.TenantId == job.TenantId)
+            .ToDictionaryAsync(s => s.Code, s => s.Id, ct);
+
+        foreach (ParsedRow row in rows)
+        {
+            string code = (row.Values.GetValueOrDefault("Code") ?? string.Empty).Trim().ToUpperInvariant();
+
+            Guid? ownerId = null;
+            string ownerName = (row.Values.GetValueOrDefault("OwnerCode") ?? string.Empty).Trim();
+            if (!string.IsNullOrWhiteSpace(ownerName) && keyPersonsByName.TryGetValue(ownerName, out Guid kpId))
+            {
+                ownerId = kpId;
+            }
+
+            Guid? orgUnitId = null;
+            string orgUnitCode = (row.Values.GetValueOrDefault("OrgUnitCode") ?? string.Empty).Trim().ToUpperInvariant();
+            if (!string.IsNullOrWhiteSpace(orgUnitCode) && orgUnitsByCode.TryGetValue(orgUnitCode, out Guid ouId))
+            {
+                orgUnitId = ouId;
+            }
+
+            List<Guid> dependsOnSystemIds = [];
+            string systemCodesRaw = row.Values.GetValueOrDefault("DependsOnSystemCodes") ?? string.Empty;
+            if (!string.IsNullOrWhiteSpace(systemCodesRaw))
+            {
+                foreach (string part in systemCodesRaw.Split(';', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    string sysCode = part.Trim().ToUpperInvariant();
+                    if (itSystemsByCode.TryGetValue(sysCode, out Guid sysId))
+                    {
+                        dependsOnSystemIds.Add(sysId);
+                    }
+                }
+            }
+
+            if (!Enum.TryParse<CriticalityLevel>(row.Values.GetValueOrDefault("CriticalityLevel"), true, out CriticalityLevel criticalityLevel))
+            {
+                criticalityLevel = CriticalityLevel.Low;
+            }
+
+            int? mtd = int.TryParse(row.Values.GetValueOrDefault("MaxTolerableDowntimeMinutes"), out int mtdVal) ? mtdVal : null;
+            int? rto = int.TryParse(row.Values.GetValueOrDefault("RecoveryTimeObjectiveMinutes"), out int rtoVal) ? rtoVal : null;
+
+            string category = row.Values.GetValueOrDefault("Category") ?? string.Empty;
+
+            BusinessProcess? existing = await db.BusinessProcesses
+                .FirstOrDefaultAsync(b => b.TenantId == job.TenantId && b.Code == code, ct);
+
+            if (existing is null)
+            {
+                Result<BusinessProcess> createResult = BusinessProcess.Create(
+                    job.TenantId, code,
+                    row.Values.GetValueOrDefault("Name") ?? string.Empty,
+                    category, criticalityLevel,
+                    ownerId, orgUnitId, mtd, rto, dependsOnSystemIds);
+
+                if (createResult.IsSuccess)
+                {
+                    db.BusinessProcesses.Add(createResult.Value);
+                }
+            }
+            else
+            {
+                existing.Update(
+                    code,
+                    row.Values.GetValueOrDefault("Name") ?? string.Empty,
+                    category, criticalityLevel,
+                    ownerId, orgUnitId, mtd, rto, dependsOnSystemIds);
             }
         }
 

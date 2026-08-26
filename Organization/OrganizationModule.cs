@@ -30,6 +30,7 @@ public static class OrganizationModule
         services.AddScoped<IImportColumnDefinitionProvider, SupplierColumnDefinitionProvider>();
         services.AddScoped<IImportColumnDefinitionProvider, KeyPersonColumnDefinitionProvider>();
         services.AddScoped<IImportColumnDefinitionProvider, ItSystemColumnDefinitionProvider>();
+        services.AddScoped<IImportColumnDefinitionProvider, BusinessProcessColumnDefinitionProvider>();
 
         return services;
     }
