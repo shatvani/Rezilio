@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Organization.Domain;
 using Rezilio.Modules.Organization.Domain;
 
 namespace Rezilio.Modules.Organization.Infrastructure;
@@ -13,7 +14,8 @@ public sealed class OrganizationDbContext : DbContext
     public DbSet<Customer> Customers => Set<Customer>();
     public DbSet<Supplier> Suppliers => Set<Supplier>();
     public DbSet<KeyPerson> KeyPersons => Set<KeyPerson>();
-    
+    public DbSet<ItSystem> ItSystems => Set<ItSystem>(); 
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -130,6 +132,21 @@ public sealed class OrganizationDbContext : DbContext
             entity.Property(e => e.Description).HasMaxLength(500);
             entity.HasIndex(e => e.TenantId);
             entity.HasIndex(e => new { e.TenantId, e.OrgUnitId });
+        });
+
+        modelBuilder.Entity<ItSystem>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Code).IsRequired().HasMaxLength(50);
+            e.Property(x => x.Name).IsRequired().HasMaxLength(200);
+            e.Property(x => x.Type).HasConversion<string>().HasMaxLength(50);
+            e.Property(x => x.HostingType).HasConversion<string>().HasMaxLength(20);
+            e.Property(x => x.CriticalityLevel).HasConversion<string>().HasMaxLength(20);
+            e.Property(x => x.Vendor).HasMaxLength(200);
+            e.Property(x => x.Version).HasMaxLength(100);
+            e.Property(x => x.SupportedOrgUnitIds)
+                .HasColumnType("jsonb");
+            e.HasIndex(x => new { x.TenantId, x.Code }).IsUnique();
         });
     }
 }

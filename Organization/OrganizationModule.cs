@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Organization.Application.Services;
 using Rezilio.Modules.Organization.Application.Services;
 using Rezilio.Modules.Organization.Infrastructure;
 using Rezilio.Modules.Organization.Infrastructure.Excel;
@@ -28,6 +29,7 @@ public static class OrganizationModule
         services.AddScoped<IImportColumnDefinitionProvider, CustomerColumnDefinitionProvider>();
         services.AddScoped<IImportColumnDefinitionProvider, SupplierColumnDefinitionProvider>();
         services.AddScoped<IImportColumnDefinitionProvider, KeyPersonColumnDefinitionProvider>();
+        services.AddScoped<IImportColumnDefinitionProvider, ItSystemColumnDefinitionProvider>();
 
         return services;
     }
