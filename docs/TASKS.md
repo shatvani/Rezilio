@@ -311,11 +311,11 @@
 > **Branch:** `story/org.1-organization-module-base`  
 > `Modules/Organization/` felállítása, közös alaptípusok
 
-- [ ] `Modules/Organization/` mappa struktúra létrehozása (Domain, Application, Infrastructure)
-- [ ] `OrganizationModule.cs` – modul regisztráció (`IWolverineExtension`)
-- [ ] `OrganizationDbContext` EF Core kontextus
-- [ ] `ImportJob` aggregate (Id, TenantId, EntityType, Status, TotalRows, SuccessRows, ErrorRows, Results)
-- [ ] `EntityType` enum: `OrganizationalUnit`, `Location`, `Customer`, `Supplier`, `KeyPerson`, `ItSystem`, `BusinessProcess`
+- [x] `Modules/Organization/` mappa struktúra létrehozása (Domain, Application, Infrastructure)
+- [x] `OrganizationModule.cs` – modul regisztráció (`IWolverineExtension`)
+- [x] `OrganizationDbContext` EF Core kontextus
+- [x] `ImportJob` aggregate (Id, TenantId, EntityType, Status, TotalRows, SuccessRows, ErrorRows, Results)
+- [x] `EntityType` enum: `OrganizationalUnit`, `Location`, `Customer`, `Supplier`, `KeyPerson`, `ItSystem`, `BusinessProcess`
 - [ ] `ImportJobCreated`, `ImportJobCompleted`, `ImportJobFailed` domain event-ek
 - [ ] `ImportJobsDbContext` + migráció
 
@@ -334,16 +334,16 @@
 > **Branch:** `story/org.2-excel-import-engine`  
 > Általános Excel template generálás és import parse engine
 
-- [ ] ClosedXML NuGet csomag hozzáadása (MIT licenc)
-- [ ] `IExcelTemplateGenerator` interface + implementáció
-- [ ] `IExcelImportParser<T>` interface + általános implementáció
-- [ ] Excel template generátor minden EntityType-hoz (fejléc, kötelező mezők, validáció, példasor)
-- [ ] Validációs pipeline: sor-szintű hibák összegyűjtése (nem dob exception-t)
-- [ ] `DownloadImportTemplate` Query + Handler (EntityType alapján)
-- [ ] `UploadAndValidateImport` Command + Handler → ImportJob létrehozása + validálás
-- [ ] `ConfirmImport` Command + Handler → tényleges adatbetöltés
-- [ ] `GetImportJobStatus` Query + Handler
-- [ ] `GetImportJobResults` Query + Handler (hibás sorok részletezése)
+- [x] ClosedXML NuGet csomag hozzáadása (MIT licenc)
+- [x] `IExcelTemplateGenerator` interface + implementáció
+- [x] `IExcelImportParser<T>` interface + általános implementáció
+- [x] Excel template generátor minden EntityType-hoz (fejléc, kötelező mezők, validáció, példasor)
+- [x] Validációs pipeline: sor-szintű hibák összegyűjtése (nem dob exception-t)
+- [x] `DownloadImportTemplate` Query + Handler (EntityType alapján)
+- [x] `UploadAndValidateImport` Command + Handler → ImportJob létrehozása + validálás
+- [x] `ConfirmImport` Command + Handler → tényleges adatbetöltés
+- [x] `GetImportJobStatus` Query + Handler
+- [x] `GetImportJobResults` Query + Handler (hibás sorok részletezése)
 
 **Elfogadási kritériumok:**
 - Template letöltés: az Excel fájl tartalmaz fejlécsort, példasort, és kötelező mező jelölést
@@ -362,9 +362,9 @@
 #### Story ORG.3 – OrganizationalUnit (SZMSZ / szervezeti hierarchia)
 > **Branch:** `story/org.3-organizational-units`
 
-- [ ] `OrganizationalUnit` aggregate (Id, TenantId, Code, Name, ParentUnitId?, Level, Type, ManagerName?, EmployeeCount?, IsActive)
-- [ ] EF Core migráció
-- [ ] Excel import parser és template
+- [x] `OrganizationalUnit` aggregate (Id, TenantId, Code, Name, ParentUnitId?, Level, Type, ManagerName?, EmployeeCount?, IsActive)
+- [x] EF Core migráció
+- [x] Excel import parser és template
 - [ ] `CreateOrganizationalUnit` / `UpdateOrganizationalUnit` / `DeactivateOrganizationalUnit` Command + Handler + Validator
 - [ ] `GetOrganizationalUnitById` / `GetOrganizationalUnits` Query (fa struktúra)
 
@@ -395,7 +395,7 @@
 #### Story ORG.5 – Customer (Ügyfelek)
 > **Branch:** `story/org.5-customers`
 
-- [ ] `Customer` aggregate (Id, TenantId, Code, Name, Industry, Country, Tier?, AnnualRevenue? [Money], IsActive)
+- [x] `Customer` aggregate (Id, TenantId, Code, Name, Industry, Country, Tier?, AnnualRevenue? [Money], IsActive)
 - [ ] EF Core migráció
 - [ ] Excel import parser és template
 - [ ] `CreateCustomer` / `UpdateCustomer` / `DeactivateCustomer` Command + Handler + Validator

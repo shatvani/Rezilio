@@ -56,6 +56,10 @@ public sealed class ConfirmImportHandler(
         {
             await ImportCustomersAsync(job, ct);
         }
+        else if (job.EntityType == EntityType.Supplier)
+        {
+            await ImportSuppliersAsync(job, ct);
+        }
         else
         {
             throw new NotSupportedException(
@@ -132,6 +136,41 @@ public sealed class ConfirmImportHandler(
                 industry, country, contactEmail, contactPhone, description);
 
             db.Customers.Add(customer);
+            existingCodes.Add(normalizedCode);
+        }
+
+        await db.SaveChangesAsync(ct);
+    }
+
+    private async Task ImportSuppliersAsync(ImportJob job, CancellationToken ct)
+    {
+        IReadOnlyList<ParsedRow> rows = parser.Parse(job.FileContent, job.EntityType);
+        var existingCodes = await db.Suppliers
+            .Where(s => s.TenantId == job.TenantId)
+            .Select(s => s.Code)
+            .ToHashSetAsync(ct);
+
+        foreach (ParsedRow row in rows.Where(r => r.IsValid))
+        {
+            string name = row.Values["Name"]!;
+            string code = row.Values["Code"]!;
+            row.Values.TryGetValue("Industry", out string? industry);
+            row.Values.TryGetValue("Country", out string? country);
+            row.Values.TryGetValue("ContactEmail", out string? contactEmail);
+            row.Values.TryGetValue("ContactPhone", out string? contactPhone);
+            row.Values.TryGetValue("Description", out string? description);
+
+            string normalizedCode = code.Trim().ToUpperInvariant();
+            if (existingCodes.Contains(normalizedCode))
+            {
+                continue;
+            }
+
+            var supplier = Supplier.Create(
+                job.TenantId, name, code,
+                industry, country, contactEmail, contactPhone, description);
+
+            db.Suppliers.Add(supplier);
             existingCodes.Add(normalizedCode);
         }
 
