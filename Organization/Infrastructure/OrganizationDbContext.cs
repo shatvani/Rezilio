@@ -14,8 +14,8 @@ public sealed class OrganizationDbContext : DbContext
     public DbSet<Customer> Customers => Set<Customer>();
     public DbSet<Supplier> Suppliers => Set<Supplier>();
     public DbSet<KeyPerson> KeyPersons => Set<KeyPerson>();
-    public DbSet<ItSystem> ItSystems => Set<ItSystem>(); 
-
+    public DbSet<ItSystem> ItSystems => Set<ItSystem>();
+    public DbSet<BusinessProcess> BusinessProcesses => Set<BusinessProcess>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -146,6 +146,17 @@ public sealed class OrganizationDbContext : DbContext
             e.Property(x => x.Version).HasMaxLength(100);
             e.Property(x => x.SupportedOrgUnitIds)
                 .HasColumnType("jsonb");
+            e.HasIndex(x => new { x.TenantId, x.Code }).IsUnique();
+        });
+
+        modelBuilder.Entity<BusinessProcess>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Code).IsRequired().HasMaxLength(50);
+            e.Property(x => x.Name).IsRequired().HasMaxLength(200);
+            e.Property(x => x.Category).IsRequired().HasMaxLength(100);
+            e.Property(x => x.CriticalityLevel).HasConversion<string>().HasMaxLength(20);
+            e.Property(x => x.DependsOnSystemIds).HasColumnType("jsonb");
             e.HasIndex(x => new { x.TenantId, x.Code }).IsUnique();
         });
     }
