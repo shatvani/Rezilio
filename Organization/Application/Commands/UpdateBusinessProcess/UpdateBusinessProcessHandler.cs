@@ -1,7 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Organization.Domain;
 using Rezilio.Modules.Organization.Infrastructure;
-using Rezilio.SharedKernel.Results;
 using Microsoft.EntityFrameworkCore;
+using Wolverine.Http;
 
 namespace Organization.Application.Commands.UpdateBusinessProcess;
 
@@ -14,27 +17,29 @@ public sealed class UpdateBusinessProcessHandler
         _db = db;
     }
 
-    public async Task<Result> Handle(UpdateBusinessProcessCommand command, CancellationToken ct)
+    [WolverinePut("/api/organization/business-processes/{id}")]
+    [Authorize]
+    public async Task<IResult> Handle([FromRoute] Guid id, UpdateBusinessProcessCommand command, CancellationToken ct)
     {
         BusinessProcess? bp = await _db.BusinessProcesses
-            .FirstOrDefaultAsync(b => b.Id == command.Id && b.TenantId == command.TenantId, ct);
+            .FirstOrDefaultAsync(b => b.Id == id && b.TenantId == command.TenantId, ct);
 
         if (bp is null)
         {
-            return Result.Failure("Business process not found.");
+            return Results.NotFound("Business process not found.");
         }
 
         bool codeExists = await _db.BusinessProcesses
             .AnyAsync(b => b.TenantId == command.TenantId
                         && b.Code == command.Code.Trim().ToUpperInvariant()
-                        && b.Id != command.Id, ct);
+                        && b.Id != id, ct);
 
         if (codeExists)
         {
-            return Result.Failure($"Business process with code '{command.Code}' already exists.");
+            return Results.Conflict($"Business process with code '{command.Code}' already exists.");
         }
 
-        Result updateResult = bp.Update(
+        var updateResult = bp.Update(
             command.Code,
             command.Name,
             command.Category,
@@ -47,10 +52,10 @@ public sealed class UpdateBusinessProcessHandler
 
         if (updateResult.IsFailure)
         {
-            return updateResult;
+            return Results.BadRequest(updateResult.Error);
         }
 
         await _db.SaveChangesAsync(ct);
-        return Result.Success();
+        return Results.NoContent();
     }
 }

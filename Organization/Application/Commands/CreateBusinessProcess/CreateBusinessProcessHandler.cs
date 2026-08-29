@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Organization.Domain;
 using Rezilio.Modules.Organization.Infrastructure;
-using Rezilio.SharedKernel.Results;
 using Microsoft.EntityFrameworkCore;
+using Wolverine.Http;
 
 namespace Organization.Application.Commands.CreateBusinessProcess;
 
@@ -14,7 +16,9 @@ public sealed class CreateBusinessProcessHandler
         _db = db;
     }
 
-    public async Task<Result<Guid>> Handle(CreateBusinessProcessCommand command, CancellationToken ct)
+    [WolverinePost("/api/organization/business-processes")]
+    [Authorize]
+    public async Task<IResult> Handle(CreateBusinessProcessCommand command, CancellationToken ct)
     {
         bool codeExists = await _db.BusinessProcesses
             .AnyAsync(b => b.TenantId == command.TenantId
@@ -22,10 +26,10 @@ public sealed class CreateBusinessProcessHandler
 
         if (codeExists)
         {
-            return Result.Failure<Guid>($"Business process with code '{command.Code}' already exists.");
+            return Results.Conflict($"Business process with code '{command.Code}' already exists.");
         }
 
-        Result<BusinessProcess> result = BusinessProcess.Create(
+        var result = BusinessProcess.Create(
             command.TenantId,
             command.Code,
             command.Name,
@@ -39,11 +43,12 @@ public sealed class CreateBusinessProcessHandler
 
         if (result.IsFailure)
         {
-            return Result.Failure<Guid>(result.Error!);
+            return Results.BadRequest(result.Error);
         }
 
         _db.BusinessProcesses.Add(result.Value);
         await _db.SaveChangesAsync(ct);
-        return Result.Success(result.Value.Id);
+
+        return Results.Created($"/api/organization/business-processes/{result.Value.Id}", new { result.Value.Id });
     }
 }

@@ -1,11 +1,12 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Organization.Domain;
 using Rezilio.Modules.Organization.Infrastructure;
-using Rezilio.SharedKernel.Results;
 using Microsoft.EntityFrameworkCore;
+using Wolverine.Http;
 
 namespace Organization.Application.Commands.DeleteBusinessProcess;
-
-public sealed record DeleteBusinessProcessCommand(Guid Id, Guid TenantId);
 
 public sealed class DeleteBusinessProcessHandler
 {
@@ -16,18 +17,18 @@ public sealed class DeleteBusinessProcessHandler
         _db = db;
     }
 
-    public async Task<Result> Handle(DeleteBusinessProcessCommand command, CancellationToken ct)
+    [WolverineDelete("/api/organization/business-processes/{id}")]
+    [Authorize]
+    public async Task<IResult> Handle([FromRoute] Guid id, CancellationToken ct)
     {
-        BusinessProcess? bp = await _db.BusinessProcesses
-            .FirstOrDefaultAsync(b => b.Id == command.Id && b.TenantId == command.TenantId, ct);
-
+        BusinessProcess? bp = await _db.BusinessProcesses.FirstOrDefaultAsync(b => b.Id == id, ct);
         if (bp is null)
         {
-            return Result.Failure("Business process not found.");
+            return Results.NotFound();
         }
 
         _db.BusinessProcesses.Remove(bp);
         await _db.SaveChangesAsync(ct);
-        return Result.Success();
+        return Results.NoContent();
     }
 }
