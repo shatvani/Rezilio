@@ -316,8 +316,8 @@
 - [x] `OrganizationDbContext` EF Core kontextus
 - [x] `ImportJob` aggregate (Id, TenantId, EntityType, Status, TotalRows, SuccessRows, ErrorRows, Results)
 - [x] `EntityType` enum: `OrganizationalUnit`, `Location`, `Customer`, `Supplier`, `KeyPerson`, `ItSystem`, `BusinessProcess`
-- [ ] `ImportJobCreated`, `ImportJobCompleted`, `ImportJobFailed` domain event-ek
-- [ ] `ImportJobsDbContext` + migráció
+- [x] `ImportJobCreated`, `ImportJobCompleted`, `ImportJobFailed` domain event-ek
+- [x] `ImportJobsDbContext` + migráció
 
 **Elfogadási kritériumok:**
 - Az `OrganizationModule` regisztrálva van a Wolverine pipeline-ban, felismeri a modul Command-jait
@@ -365,8 +365,8 @@
 - [x] `OrganizationalUnit` aggregate (Id, TenantId, Code, Name, ParentUnitId?, Level, Type, ManagerName?, EmployeeCount?, IsActive)
 - [x] EF Core migráció
 - [x] Excel import parser és template
-- [ ] `CreateOrganizationalUnit` / `UpdateOrganizationalUnit` / `DeactivateOrganizationalUnit` Command + Handler + Validator
-- [ ] `GetOrganizationalUnitById` / `GetOrganizationalUnits` Query (fa struktúra)
+- [x] `CreateOrganizationalUnit` / `UpdateOrganizationalUnit` / `DeactivateOrganizationalUnit` Command + Handler + Validator
+- [x] `GetOrganizationalUnitById` / `GetOrganizationalUnits` Query (fa struktúra)
 
 **Elfogadási kritériumok:**
 - Hierarchikus fa helyesen épül fel (parent-child kapcsolat, ciklus detektálás)
@@ -396,10 +396,10 @@
 > **Branch:** `story/org.5-customers`
 
 - [x] `Customer` aggregate (Id, TenantId, Code, Name, Industry, Country, Tier?, AnnualRevenue? [Money], IsActive)
-- [ ] EF Core migráció
-- [ ] Excel import parser és template
-- [ ] `CreateCustomer` / `UpdateCustomer` / `DeactivateCustomer` Command + Handler + Validator
-- [ ] `GetCustomerById` / `GetCustomers` Query
+- [x] EF Core migráció
+- [x] Excel import parser és template
+- [x] `CreateCustomer` / `UpdateCustomer` / `DeactivateCustomer` Command + Handler + Validator
+- [x] `GetCustomerById` / `GetCustomers` Query
 
 **Elfogadási kritériumok:**
 - `AnnualRevenue` `Money` value object-ként tárolódik (Amount + CurrencyCode)
@@ -411,11 +411,11 @@
 #### Story ORG.6 – Supplier (Beszállítók)
 > **Branch:** `story/org.6-suppliers`
 
-- [ ] `Supplier` aggregate (Id, TenantId, Code, Name, Category, Country, CriticalityLevel, ContactName?, ContactEmail?, ContractExpiry?, IsActive)
-- [ ] EF Core migráció
-- [ ] Excel import parser és template
-- [ ] `CreateSupplier` / `UpdateSupplier` / `DeactivateSupplier` Command + Handler + Validator
-- [ ] `GetSupplierById` / `GetSuppliers` Query
+- [x] `Supplier` aggregate (Id, TenantId, Code, Name, Category, Country, CriticalityLevel, ContactName?, ContactEmail?, ContractExpiry?, IsActive)
+- [x] EF Core migráció
+- [x] Excel import parser és template
+- [x] `CreateSupplier` / `UpdateSupplier` / `DeactivateSupplier` Command + Handler + Validator
+- [x] `GetSupplierById` / `GetSuppliers` Query
 
 **Elfogadási kritériumok:**
 - `CriticalityLevel` enum értéke validált (Low, Medium, High, Critical)
@@ -427,11 +427,11 @@
 #### Story ORG.7 – KeyPerson (Kulcsszemélyek)
 > **Branch:** `story/org.7-key-persons`
 
-- [ ] `KeyPerson` aggregate (Id, TenantId, Name, Title, Department, OrgUnitId?, Email?, Phone?, BackupPersonName?, IsActive)
-- [ ] EF Core migráció
-- [ ] Excel import parser és template
-- [ ] `CreateKeyPerson` / `UpdateKeyPerson` / `DeactivateKeyPerson` Command + Handler + Validator
-- [ ] `GetKeyPersonById` / `GetKeyPersons` Query
+- [x] `KeyPerson` aggregate (Id, TenantId, Name, Title, Department, OrgUnitId?, Email?, Phone?, BackupPersonName?, IsActive)
+- [x] EF Core migráció
+- [x] Excel import parser és template
+- [x] `CreateKeyPerson` / `UpdateKeyPerson` / `DeactivateKeyPerson` Command + Handler + Validator
+- [x] `GetKeyPersonById` / `GetKeyPersons` Query
 
 **Elfogadási kritériumok:**
 - `OrgUnitId` ha meg van adva, létező szervezeti egységre mutat (FK validáció)
@@ -443,11 +443,11 @@
 #### Story ORG.8 – ItSystem (IT rendszerek)
 > **Branch:** `story/org.8-it-systems`
 
-- [ ] `ItSystem` aggregate (Id, TenantId, Code, Name, Type, Vendor?, Version?, HostingType, OwnerId?, SupportedOrgUnitIds[], CriticalityLevel, IsActive)
-- [ ] EF Core migráció (JSONB tömb a `SupportedOrgUnitIds`-hoz)
-- [ ] Excel import parser és template
-- [ ] `CreateItSystem` / `UpdateItSystem` / `DeactivateItSystem` Command + Handler + Validator
-- [ ] `GetItSystemById` / `GetItSystems` Query
+- [x] `ItSystem` aggregate (Id, TenantId, Code, Name, Type, Vendor?, Version?, HostingType, OwnerId?, SupportedOrgUnitIds[], CriticalityLevel, IsActive)
+- [x] EF Core migráció (JSONB tömb a `SupportedOrgUnitIds`-hoz)
+- [x] Excel import parser és template
+- [x] `CreateItSystem` / `UpdateItSystem` / `DeactivateItSystem` Command + Handler + Validator
+- [x] `GetItSystemById` / `GetItSystems` Query
 
 **Elfogadási kritériumok:**
 - `HostingType` enum validált (OnPrem, Cloud, Hybrid)
@@ -459,11 +459,11 @@
 #### Story ORG.9 – BusinessProcess (Üzleti folyamatok)
 > **Branch:** `story/org.9-business-processes`
 
-- [ ] `BusinessProcess` aggregate (Id, TenantId, Code, Name, OwnerId?, OrgUnitId?, Category, CriticalityLevel, MaxTolerableDowntime?, RecoveryTimeObjective?, DependsOnSystemIds[], IsActive)
-- [ ] EF Core migráció (JSONB tömb a `DependsOnSystemIds`-hoz)
-- [ ] Excel import parser és template
-- [ ] `CreateBusinessProcess` / `UpdateBusinessProcess` / `DeactivateBusinessProcess` Command + Handler + Validator
-- [ ] `GetBusinessProcessById` / `GetBusinessProcesses` Query
+- [x] `BusinessProcess` aggregate (Id, TenantId, Code, Name, OwnerId?, OrgUnitId?, Category, CriticalityLevel, MaxTolerableDowntime?, RecoveryTimeObjective?, DependsOnSystemIds[], IsActive)
+- [x] EF Core migráció (JSONB tömb a `DependsOnSystemIds`-hoz)
+- [x] Excel import parser és template
+- [x] `CreateBusinessProcess` / `UpdateBusinessProcess` / `DeactivateBusinessProcess` Command + Handler + Validator
+- [x] `GetBusinessProcessById` / `GetBusinessProcesses` Query
 
 **Elfogadási kritériumok:**
 - `RecoveryTimeObjective` ≤ `MaxTolerableDowntime` üzleti szabály (RTO nem lehet nagyobb az MTD-nél)
