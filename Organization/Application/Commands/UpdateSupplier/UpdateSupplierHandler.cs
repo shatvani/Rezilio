@@ -19,6 +19,16 @@ public sealed class UpdateSupplierHandler(OrganizationDbContext db)
             return Results.NotFound($"Supplier {id} nem található.");
         }
 
+        bool codeExists = await db.Suppliers
+            .AnyAsync(s => s.TenantId == supplier.TenantId
+                        && s.Code == command.Code.Trim().ToUpperInvariant()
+                        && s.Id != id, ct);
+
+        if (codeExists)
+        {
+            return Results.Conflict($"Supplier with code '{command.Code}' already exists.");
+        }
+
         supplier.Update(
             command.Name,
             command.Code,

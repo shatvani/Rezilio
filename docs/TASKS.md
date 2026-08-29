@@ -472,6 +472,27 @@
 
 ---
 
+#### Fix ORG.F1 – Validáció és Code-egyediség hardening
+> **Branch:** `fix/org-validation-hardening`
+> Utólagos javítás: ORG.3 (Unit), ORG.4 (Customer), ORG.5 (Supplier), ORG.6 (KeyPerson) hiányos
+> validációja, és ORG.3/ORG.4/ORG.5 Code-egyediség ellenőrzésének hiánya (DB unique constraint
+> van, handler-szintű előzetes ellenőrzés nem volt). Az ORG.8/ORG.9 TASKS.md bejegyzése
+> Validator-t is említ, de a kódban nem található FluentValidation validator sehol a projektben.
+
+- [ ] FluentValidation csomag hozzáadása + bekötése a Wolverine HTTP pipeline-ba (`Program.cs`)
+- [ ] `CreateCustomerValidator` / `UpdateCustomerValidator`
+- [ ] `CreateSupplierValidator` / `UpdateSupplierValidator`
+- [ ] `CreateKeyPersonValidator` / `UpdateKeyPersonValidator`
+- [ ] Code-egyediség előzetes ellenőrzés (409 Conflict) a `CreateOrganizationalUnitHandler`, `CreateCustomerHandler`, `CreateSupplierHandler` Create és Update handlerekben, az ItSystem/BusinessProcess mintája alapján
+
+**Elfogadási kritériumok:**
+- Üres/hiányzó kötelező mezővel érkező Create/Update kérés 400 Bad Request-et ad, mezőszintű hibaüzenettel (nem 500-at, nem `NullReferenceException`-t)
+- Duplikált Code-dal érkező Create/Update kérés 409 Conflict-ot ad, nem nyers `DbUpdateException`-t
+
+**Megjegyzés:** namespace-inkonzisztencia (`Organization.*` vs `Rezilio.Modules.Organization.*` az ItSystem/BusinessProcess parancsoknál) külön, később rendezendő tech-debt — nem része ennek a fixnek.
+
+---
+
 ### EPIC-ORG / Sprint 2c – Organization Frontend
 
 #### Story ORG.10 – Organization modul UI

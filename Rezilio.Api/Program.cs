@@ -12,7 +12,9 @@ using Rezilio.Modules.Organization.Infrastructure;
 using Rezilio.SharedKernel.DDD.VOs;
 using Rezilio.SharedKernel.Multitenancy;
 using Wolverine;
+using Wolverine.FluentValidation;
 using Wolverine.Http;
+using Wolverine.Http.FluentValidation;
 using Wolverine.Postgresql;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,6 +36,9 @@ builder.Host.UseWolverine(opts =>
     opts.Policies.AddMiddleware<ModuleAccessBehavior>(
         chain => chain.MessageType?.Namespace?.StartsWith("Rezilio") == true
               && chain.MessageType.Namespace.Contains(".Modules.Licensing.") == false);
+
+    // FluentValidation validátorok automatikus felderítése a fent már regisztrált assembly-kből
+    opts.UseFluentValidation();
 });
 
 // Auth
@@ -119,7 +124,11 @@ app.UseRequestLocalization(new RequestLocalizationOptions()
 
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapWolverineEndpoints();
+app.MapWolverineEndpoints(opts =>
+{
+    // Validációs hibák automatikus 400 Bad Request + ProblemDetails válasszá alakítása
+    opts.UseFluentValidationProblemDetailMiddleware();
+});
 app.MapGet("/", () => Results.Ok(new { Status = "Rezilio API", Version = "0.1.0" }));
 
 await app.RunAsync();

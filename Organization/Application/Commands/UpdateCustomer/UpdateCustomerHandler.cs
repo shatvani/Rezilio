@@ -19,6 +19,16 @@ public sealed class UpdateCustomerHandler(OrganizationDbContext db)
             return Results.NotFound($"Customer {id} nem található.");
         }
 
+        bool codeExists = await db.Customers
+            .AnyAsync(c => c.TenantId == customer.TenantId
+                        && c.Code == command.Code.Trim().ToUpperInvariant()
+                        && c.Id != id, ct);
+
+        if (codeExists)
+        {
+            return Results.Conflict($"Customer with code '{command.Code}' already exists.");
+        }
+
         customer.Update(
             command.Name,
             command.Code,
