@@ -1,5 +1,3 @@
-using Rezilio.Modules.Organization.Domain;
-
 namespace Rezilio.Modules.Organization.Application.Services;
 
 /// <summary>

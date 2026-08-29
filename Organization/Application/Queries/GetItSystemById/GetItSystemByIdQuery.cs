@@ -1,6 +1,4 @@
-using Organization.Domain;
-
-namespace Organization.Application.Queries.GetItSystemById;
+namespace Rezilio.Modules.Organization.Application.Queries.GetItSystemById;
 
 public sealed record GetItSystemByIdQuery(Guid Id, Guid TenantId);
 

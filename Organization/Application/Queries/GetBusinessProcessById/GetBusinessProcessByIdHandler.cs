@@ -1,8 +1,6 @@
-using Rezilio.Modules.Organization.Infrastructure;
 using Rezilio.SharedKernel.Results;
-using Microsoft.EntityFrameworkCore;
 
-namespace Organization.Application.Queries.GetBusinessProcessById;
+namespace Rezilio.Modules.Organization.Application.Queries.GetBusinessProcessById;
 
 public sealed class GetBusinessProcessByIdHandler
 {

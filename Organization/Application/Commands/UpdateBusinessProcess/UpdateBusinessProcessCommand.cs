@@ -1,6 +1,4 @@
-using Organization.Domain;
-
-namespace Organization.Application.Commands.UpdateBusinessProcess;
+namespace Rezilio.Modules.Organization.Application.Commands.UpdateBusinessProcess;
 
 public sealed record UpdateBusinessProcessCommand(
     Guid Id,

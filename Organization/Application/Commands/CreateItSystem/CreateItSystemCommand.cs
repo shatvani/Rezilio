@@ -1,6 +1,4 @@
-using Organization.Domain;
-
-namespace Organization.Application.Commands.CreateItSystem;
+namespace Rezilio.Modules.Organization.Application.Commands.CreateItSystem;
 
 public sealed record CreateItSystemCommand(
     Guid TenantId,

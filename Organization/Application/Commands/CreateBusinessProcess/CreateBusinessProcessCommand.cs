@@ -1,6 +1,4 @@
-using Organization.Domain;
-
-namespace Organization.Application.Commands.CreateBusinessProcess;
+namespace Rezilio.Modules.Organization.Application.Commands.CreateBusinessProcess;
 
 public sealed record CreateBusinessProcessCommand(
     Guid TenantId,

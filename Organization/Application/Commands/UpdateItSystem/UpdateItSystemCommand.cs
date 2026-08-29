@@ -1,6 +1,4 @@
-using Organization.Domain;
-
-namespace Organization.Application.Commands.UpdateItSystem;
+namespace Rezilio.Modules.Organization.Application.Commands.UpdateItSystem;
 
 public sealed record UpdateItSystemCommand(
     Guid Id,

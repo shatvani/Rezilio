@@ -1,12 +1,6 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Organization.Application.Queries.GetItSystemById;
-using Rezilio.Modules.Organization.Infrastructure;
-using Microsoft.EntityFrameworkCore;
-using Wolverine.Http;
+using Rezilio.Modules.Organization.Application.Queries.GetItSystemById;
 
-namespace Organization.Application.Queries.GetItSystemsByTenant;
+namespace Rezilio.Modules.Organization.Application.Queries.GetItSystemsByTenant;
 
 public sealed class GetItSystemsByTenantHandler
 {

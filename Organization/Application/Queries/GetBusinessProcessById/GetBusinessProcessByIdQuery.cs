@@ -1,6 +1,4 @@
-using Organization.Domain;
-
-namespace Organization.Application.Queries.GetBusinessProcessById;
+namespace Rezilio.Modules.Organization.Application.Queries.GetBusinessProcessById;
 
 public sealed record GetBusinessProcessByIdQuery(Guid Id, Guid TenantId);
 

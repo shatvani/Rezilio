@@ -1,7 +1,7 @@
+using Rezilio.Modules.Organization.Domain.Events;
 using Rezilio.SharedKernel.DDD;
-using Organization.Domain.Events;
 
-namespace Organization.Domain;
+namespace Rezilio.Modules.Organization.Domain;
 
 public sealed class ItSystem : AggregateRoot<Guid>
 {

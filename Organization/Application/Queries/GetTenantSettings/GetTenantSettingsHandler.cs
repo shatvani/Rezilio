@@ -1,8 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
-using Rezilio.Modules.Organization.Infrastructure;
-using Wolverine.Http;
-
 namespace Rezilio.Modules.Organization.Application.Queries.GetTenantSettings;
 
 public sealed class GetTenantSettingsHandler(OrganizationDbContext db)

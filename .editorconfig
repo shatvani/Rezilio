@@ -9,6 +9,7 @@ insert_final_newline = true
 
 [*.{cs,csx}]
 indent_size = 4
+dotnet_diagnostic.IDE0005.severity = warning
 
 # C# coding conventions
 dotnet_sort_system_directives_first = true

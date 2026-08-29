@@ -1,6 +1,5 @@
 using ClosedXML.Excel;
 using Rezilio.Modules.Organization.Application.Services;
-using Rezilio.Modules.Organization.Domain;
 
 namespace Rezilio.Modules.Organization.Infrastructure.Excel;
 

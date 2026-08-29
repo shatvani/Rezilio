@@ -1,12 +1,6 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Organization.Application.Queries.GetBusinessProcessById;
-using Rezilio.Modules.Organization.Infrastructure;
-using Microsoft.EntityFrameworkCore;
-using Wolverine.Http;
+using Rezilio.Modules.Organization.Application.Queries.GetBusinessProcessById;
 
-namespace Organization.Application.Queries.GetBusinessProcessesByTenant;
+namespace Rezilio.Modules.Organization.Application.Queries.GetBusinessProcessesByTenant;
 
 public sealed class GetBusinessProcessesByTenantHandler
 {

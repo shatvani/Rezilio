@@ -1,7 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-using Organization.Domain;
-using Rezilio.Modules.Organization.Domain;
-
 namespace Rezilio.Modules.Organization.Infrastructure;
 
 public sealed class OrganizationDbContext : DbContext

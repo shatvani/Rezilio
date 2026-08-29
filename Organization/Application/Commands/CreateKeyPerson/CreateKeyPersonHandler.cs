@@ -1,9 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Rezilio.Modules.Organization.Domain;
-using Rezilio.Modules.Organization.Infrastructure;
-using Wolverine.Http;
-
 namespace Rezilio.Modules.Organization.Application.Commands.CreateKeyPerson;
 
 public sealed class CreateKeyPersonHandler(OrganizationDbContext db)

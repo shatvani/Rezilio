@@ -1,10 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
-using Rezilio.Modules.Organization.Domain;
-using Rezilio.Modules.Organization.Infrastructure;
-using Wolverine.Http;
-
 namespace Rezilio.Modules.Organization.Application.Commands.CreateCustomer;
 
 public sealed class CreateCustomerHandler(OrganizationDbContext db)

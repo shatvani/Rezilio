@@ -1,8 +1,8 @@
-using Organization.Domain.Events;
+using Rezilio.Modules.Organization.Domain.Events;
 using Rezilio.SharedKernel.DDD;
 using Rezilio.SharedKernel.Results;
 
-namespace Organization.Domain;
+namespace Rezilio.Modules.Organization.Domain;
 
 public sealed class BusinessProcess : AggregateRoot<Guid>
 {

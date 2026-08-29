@@ -1,11 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Organization.Domain;
-using Rezilio.Modules.Organization.Infrastructure;
-using Microsoft.EntityFrameworkCore;
-using Wolverine.Http;
-
-namespace Organization.Application.Commands.CreateBusinessProcess;
+namespace Rezilio.Modules.Organization.Application.Commands.CreateBusinessProcess;
 
 public sealed class CreateBusinessProcessHandler
 {

@@ -1,12 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Organization.Domain;
-using Rezilio.Modules.Organization.Infrastructure;
-using Microsoft.EntityFrameworkCore;
-using Wolverine.Http;
-
-namespace Organization.Application.Commands.DeleteBusinessProcess;
+namespace Rezilio.Modules.Organization.Application.Commands.DeleteBusinessProcess;
 
 public sealed class DeleteBusinessProcessHandler
 {

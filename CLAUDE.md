@@ -126,6 +126,21 @@ src/
 - Handler-ek: ugyanaz a neve, `Handler` suffix-szel
 - Domain Event-ek: `<Főnév><IgeMúlt>` – pl. `RiskCreated`, `AssessmentCompleted`
 
+### Namespace és using-ok
+- Minden modul namespace-e a `Rezilio.Modules.<ModuleName>.*` gyököt használja
+  (pl. `Rezilio.Modules.Organization.Domain`, `Rezilio.Modules.Organization.Application.Commands.*`)
+  — modul-előtag nélküli namespace (pl. csak `Organization.Domain`) **nem megengedett**,
+  mert inkonzisztenciát okoz és megnehezíti a modulok közti egyértelmű hivatkozást.
+- **Global using-ok**: minden projekt (`Modules/<ModuleName>/`, `RiskAnalyzer.Api`) egy
+  `GlobalUsings.cs` fájlban gyűjti a projekt egészében gyakran ismétlődő using-okat
+  (pl. `Microsoft.EntityFrameworkCore`, `Wolverine.Http`, `Microsoft.AspNetCore.Authorization`,
+  `Microsoft.AspNetCore.Http`, a modul saját `Domain`/`Infrastructure` névtere).
+  Ez `net10.0` + `ImplicitUsings=enable` mellett kockázatmentes és jelentősen csökkenti
+  a boilerplate using-blokkokat Command/Handler fájlonként.
+- Ha egy fájlban csak a `GlobalUsings.cs`-ben már felvett using-ok kellenének, ne írj
+  saját `using` sort hozzá – hagyatkozz a globálisra. Fájl-specifikus, ritkán használt
+  namespace-t (pl. egy adott domain esemény) továbbra is helyi `using`-gal adj hozzá.
+
 ### Hibakezelés
 - Handler-ek `Result<T>` típust adnak vissza (nem dobnak exception-t üzleti hibánál)
 - Infrastruktúrális hibák mehetnek exception-ként (Wolverine kezeli)

@@ -1,7 +1,4 @@
-using Rezilio.Modules.Organization.Application.Services;
-using Rezilio.Modules.Organization.Domain;
-
-namespace Organization.Application.Services;
+namespace Rezilio.Modules.Organization.Application.Services;
 
 public sealed class ItSystemColumnDefinitionProvider : IImportColumnDefinitionProvider
 {

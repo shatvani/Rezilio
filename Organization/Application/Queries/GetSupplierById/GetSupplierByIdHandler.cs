@@ -1,10 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Rezilio.Modules.Organization.Infrastructure;
-using Wolverine.Http;
-
 namespace Rezilio.Modules.Organization.Application.Queries.GetSupplierById;
 
 public sealed class GetSupplierByIdHandler(OrganizationDbContext db)

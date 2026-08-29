@@ -1,8 +1,6 @@
-using Rezilio.Modules.Organization.Infrastructure;
 using Rezilio.SharedKernel.Results;
-using Microsoft.EntityFrameworkCore;
 
-namespace Organization.Application.Queries.GetItSystemById;
+namespace Rezilio.Modules.Organization.Application.Queries.GetItSystemById;
 
 public sealed class GetItSystemByIdHandler
 {

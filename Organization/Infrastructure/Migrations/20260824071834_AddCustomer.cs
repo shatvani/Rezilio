@@ -1,9 +1,8 @@
-﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Organization.Infrastructure.Migrations
+namespace Rezilio.Modules.Organization.Infrastructure.Migrations
 {
     /// <inheritdoc />
     public partial class AddCustomer : Migration

@@ -1,4 +1,4 @@
-namespace Organization.Domain;
+namespace Rezilio.Modules.Organization.Domain;
 
 public enum ItSystemType
 {
