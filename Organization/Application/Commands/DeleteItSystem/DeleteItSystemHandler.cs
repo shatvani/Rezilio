@@ -1,11 +1,12 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Organization.Domain;
 using Rezilio.Modules.Organization.Infrastructure;
-using Rezilio.SharedKernel.Results;
 using Microsoft.EntityFrameworkCore;
+using Wolverine.Http;
 
 namespace Organization.Application.Commands.DeleteItSystem;
-
-public sealed record DeleteItSystemCommand(Guid Id, Guid TenantId);
 
 public sealed class DeleteItSystemHandler
 {
@@ -16,18 +17,18 @@ public sealed class DeleteItSystemHandler
         _db = db;
     }
 
-    public async Task<Result> Handle(DeleteItSystemCommand command, CancellationToken ct)
+    [WolverineDelete("/api/organization/it-systems/{id}")]
+    [Authorize]
+    public async Task<IResult> Handle([FromRoute] Guid id, CancellationToken ct)
     {
-        ItSystem? system = await _db.ItSystems
-            .FirstOrDefaultAsync(s => s.Id == command.Id && s.TenantId == command.TenantId, ct);
-
+        ItSystem? system = await _db.ItSystems.FirstOrDefaultAsync(s => s.Id == id, ct);
         if (system is null)
         {
-            return Result.Failure("IT system not found.");
+            return Results.NotFound();
         }
 
         _db.ItSystems.Remove(system);
         await _db.SaveChangesAsync(ct);
-        return Result.Success();
+        return Results.NoContent();
     }
 }
