@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Organization.Domain;
 using Rezilio.Modules.Organization.Infrastructure;
-using Rezilio.SharedKernel.Results;
 using Microsoft.EntityFrameworkCore;
+using Wolverine.Http;
 
 namespace Organization.Application.Commands.CreateItSystem;
 
@@ -14,14 +16,17 @@ public sealed class CreateItSystemHandler
         _db = db;
     }
 
-    public async Task<Result<Guid>> Handle(CreateItSystemCommand command, CancellationToken ct)
+    [WolverinePost("/api/organization/it-systems")]
+    [Authorize]
+    public async Task<IResult> Handle(CreateItSystemCommand command, CancellationToken ct)
     {
         bool codeExists = await _db.ItSystems
-            .AnyAsync(s => s.TenantId == command.TenantId && s.Code.Equals(command.Code.Trim(), StringComparison.InvariantCultureIgnoreCase), ct);
+            .AnyAsync(s => s.TenantId == command.TenantId
+                        && s.Code.Equals(command.Code.Trim(), StringComparison.InvariantCultureIgnoreCase), ct);
 
         if (codeExists)
         {
-            return Result.Failure<Guid>($"IT system with code '{command.Code}' already exists.");
+            return Results.Conflict($"IT system with code '{command.Code}' already exists.");
         }
 
         ItSystem system = ItSystem.Create(
@@ -39,6 +44,6 @@ public sealed class CreateItSystemHandler
         _db.ItSystems.Add(system);
         await _db.SaveChangesAsync(ct);
 
-        return Result<Guid>.Success(system.Id);
+        return Results.Created($"/api/organization/it-systems/{system.Id}", new { system.Id });
     }
 }

@@ -1,7 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Organization.Application.Queries.GetBusinessProcessById;
 using Rezilio.Modules.Organization.Infrastructure;
-using Rezilio.SharedKernel.Results;
 using Microsoft.EntityFrameworkCore;
+using Wolverine.Http;
 
 namespace Organization.Application.Queries.GetBusinessProcessesByTenant;
 
@@ -14,10 +17,12 @@ public sealed class GetBusinessProcessesByTenantHandler
         _db = db;
     }
 
-    public async Task<Result<List<BusinessProcessDto>>> Handle(GetBusinessProcessesByTenantQuery query, CancellationToken ct)
+    [WolverineGet("/api/organization/business-processes")]
+    [Authorize]
+    public async Task<IResult> Handle([FromQuery] Guid tenantId, CancellationToken ct)
     {
         List<BusinessProcessDto> list = await _db.BusinessProcesses
-            .Where(b => b.TenantId == query.TenantId)
+            .Where(b => b.TenantId == tenantId)
             .OrderBy(b => b.Code)
             .Select(b => new BusinessProcessDto(
                 b.Id, b.TenantId, b.Code, b.Name, b.Category, b.CriticalityLevel,
@@ -25,6 +30,6 @@ public sealed class GetBusinessProcessesByTenantHandler
                 b.RecoveryTimeObjectiveMinutes, b.DependsOnSystemIds))
             .ToListAsync(ct);
 
-        return Result.Success(list);
+        return Results.Ok(list);
     }
 }
