@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Rezilio.Modules.Organization.Domain;
 using Rezilio.Modules.Organization.Infrastructure;
 using Wolverine.Http;
@@ -16,6 +17,15 @@ public sealed class CreateOrganizationalUnitHandler(OrganizationDbContext db)
         CreateOrganizationalUnitCommand command,
         CancellationToken ct)
     {
+        bool codeExists = await db.OrganizationalUnits
+            .AnyAsync(u => u.TenantId == command.TenantId
+                        && u.Code == command.Code.Trim().ToUpperInvariant(), ct);
+
+        if (codeExists)
+        {
+            return Results.Conflict($"Organizational unit with code '{command.Code}' already exists.");
+        }
+
         var unit = OrganizationalUnit.Create(
             command.TenantId,
             command.Name,

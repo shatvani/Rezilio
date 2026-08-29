@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Rezilio.Modules.Organization.Domain;
 using Rezilio.Modules.Organization.Infrastructure;
 using Wolverine.Http;
@@ -12,6 +13,15 @@ public sealed class CreateSupplierHandler(OrganizationDbContext db)
     [Authorize]
     public async Task<IResult> Handle(CreateSupplierCommand command, CancellationToken ct)
     {
+        bool codeExists = await db.Suppliers
+            .AnyAsync(s => s.TenantId == command.TenantId
+                        && s.Code == command.Code.Trim().ToUpperInvariant(), ct);
+
+        if (codeExists)
+        {
+            return Results.Conflict($"Supplier with code '{command.Code}' already exists.");
+        }
+
         var supplier = Supplier.Create(
             command.TenantId,
             command.Name,

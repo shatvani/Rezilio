@@ -25,6 +25,16 @@ public sealed class UpdateOrganizationalUnitHandler(OrganizationDbContext db)
             return Results.NotFound();
         }
 
+        bool codeExists = await db.OrganizationalUnits
+            .AnyAsync(u => u.TenantId == unit.TenantId
+                        && u.Code == command.Code.Trim().ToUpperInvariant()
+                        && u.Id != id, ct);
+
+        if (codeExists)
+        {
+            return Results.Conflict($"Organizational unit with code '{command.Code}' already exists.");
+        }
+
         unit.Update(command.Name, command.Code, command.ParentId, command.Description);
         await db.SaveChangesAsync(ct);
 
