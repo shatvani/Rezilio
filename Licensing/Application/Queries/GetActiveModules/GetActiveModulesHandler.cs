@@ -1,9 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
-using Rezilio.Modules.Licensing.Domain;
-using Rezilio.Modules.Licensing.Infrastructure;
-using Wolverine.Http;
-
 namespace Rezilio.Modules.Licensing.Application.Queries.GetActiveModules;
 
 public sealed class GetActiveModulesHandler(LicensingDbContext db)

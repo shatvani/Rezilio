@@ -1,6 +1,4 @@
-using Rezilio.Modules.Licensing.Domain;
-
-namespace Licensing.Application.Commands.CreateTenantLicense;
+namespace Rezilio.Modules.Licensing.Application.Commands.CreateTenantLicense;
 
 public sealed record CreateTenantLicenseCommand(
     Guid TenantId,

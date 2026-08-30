@@ -1,7 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-using Rezilio.Modules.Licensing.Domain;
-using Rezilio.Modules.Licensing.Infrastructure;
-
 namespace Rezilio.Modules.Licensing.Application.Services;
 
 internal sealed class ModuleAccessChecker : IModuleAccessChecker

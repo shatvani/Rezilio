@@ -14,7 +14,6 @@ using Rezilio.SharedKernel.Multitenancy;
 using Wolverine;
 using Wolverine.FluentValidation;
 using Wolverine.Http;
-using Wolverine.Http.FluentValidation;
 using Wolverine.Postgresql;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -29,6 +28,9 @@ builder.Host.UseWolverine(opts =>
     // Wolverine outbox: alkalmazás adat + event egyetlen tranzakcióban
     opts.PersistMessagesWithPostgresql(connectionString);
 
+    // FluentValidation automatikus 400 Bad Request-té alakítása
+    opts.UseFluentValidation();
+
     // Licensing assembly handlereinek beregisztrálása
     opts.Discovery.IncludeAssembly(typeof(LicensingModule).Assembly);
     opts.Discovery.IncludeAssembly(typeof(OrganizationModule).Assembly);
@@ -36,9 +38,6 @@ builder.Host.UseWolverine(opts =>
     opts.Policies.AddMiddleware<ModuleAccessBehavior>(
         chain => chain.MessageType?.Namespace?.StartsWith("Rezilio") == true
               && chain.MessageType.Namespace.Contains(".Modules.Licensing.") == false);
-
-    // FluentValidation validátorok automatikus felderítése a fent már regisztrált assembly-kből
-    opts.UseFluentValidation();
 });
 
 // Auth
@@ -58,6 +57,10 @@ builder.Services.AddSingleton<IClaimsTransformation, KeycloakClaimsTransformatio
 // Multitenancy – Phase 1: egyetlen fix TenantId
 builder.Services.AddScoped<ITenantContext, FixedTenantContext>();
 
+// ModuleNotLicensedException → 403 ProblemDetails
+builder.Services.AddExceptionHandler<ModuleNotLicensedExceptionHandler>();
+builder.Services.AddProblemDetails();
+
 builder.Services.AddHealthChecks();
 builder.Services.AddWolverineHttp();
 
@@ -69,6 +72,8 @@ builder.Services.AddOrganizationModule(connectionString);
 builder.Services.AddLocalization(opts => opts.ResourcesPath = "Resources");
 
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 // Dev módban automatikus migráció – production-ban kézi migráció
 if (app.Environment.IsDevelopment())
@@ -124,11 +129,7 @@ app.UseRequestLocalization(new RequestLocalizationOptions()
 
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapWolverineEndpoints(opts =>
-{
-    // Validációs hibák automatikus 400 Bad Request + ProblemDetails válasszá alakítása
-    opts.UseFluentValidationProblemDetailMiddleware();
-});
+app.MapWolverineEndpoints();
 app.MapGet("/", () => Results.Ok(new { Status = "Rezilio API", Version = "0.1.0" }));
 
 await app.RunAsync();

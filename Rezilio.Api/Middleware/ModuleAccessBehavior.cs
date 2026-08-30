@@ -1,30 +1,59 @@
+using System.Reflection;
+using Rezilio.Modules.Licensing;
+using Rezilio.Modules.Licensing.Application.Services;
+using Rezilio.Modules.Licensing.Domain.Exceptions;
 using Wolverine;
 
 namespace Rezilio.Api.Middleware;
 
 /// <summary>
 /// Wolverine pipeline middleware – modul licensz-ellenőrzés.
-/// Phase 0.2: skeleton, mindig átenged.
-/// Phase 0.5: tényleges <c>ModuleType</c>-alapú ellenőrzés kerül ide.
+/// Csak azokra a command/query típusokra fut le érdemben, amikre fel van téve a
+/// //see cref="RequiresModuleAttribute"/// — ilyen jelenleg még nincs egyetlen modulban sem
+/// (az Organization modul szándékosan nincs licenszelve), de a jövőbeli prémium modulok
+/// (Risk/Assessment/Treatment stb.) parancsai erre lesznek felkészítve.
 /// </summary>
 public class ModuleAccessBehavior
 {
     public async Task<HandlerContinuation> BeforeAsync(
         Envelope envelope,
+        IModuleAccessChecker moduleAccessChecker,
         ILogger<ModuleAccessBehavior> logger,
         CancellationToken cancellationToken)
     {
-        // TODO Phase 0.5: resolválni a szükséges ModuleType-ot a command attribútumból,
-        // majd ITenantLicenseService.IsModuleActiveAsync() hívás.
-        // Ha false → throw new ModuleNotLicensedException(moduleType);
+        object? message = envelope.Message;
+        if (message is null)
+        {
+            return HandlerContinuation.Continue;
+        }
 
-        logger.LogDebug("ModuleAccessBehavior: {MessageType} – engedélyezve (Phase 0.2 placeholder)",
-            envelope.MessageType);
+        Type messageType = message.GetType();
+        RequiresModuleAttribute? attribute = messageType.GetCustomAttribute<RequiresModuleAttribute>();
+
+        if (attribute is null)
+        {
+            // Ez a command/query nincs licenszhez kötve (pl. Organization modul) — mindig engedélyezett.
+            return HandlerContinuation.Continue;
+        }
+
+        PropertyInfo? tenantIdProperty = messageType.GetProperty("TenantId");
+        if (tenantIdProperty?.GetValue(message) is not Guid tenantId)
+        {
+            logger.LogWarning(
+                "{MessageType} [RequiresModule] attribútummal van jelölve, de nincs olvasható TenantId property — a modul-ellenőrzés kihagyva.",
+                messageType.Name);
+            return HandlerContinuation.Continue;
+        }
+
+        bool isActive = await moduleAccessChecker.IsModuleActiveAsync(attribute.Module, tenantId, cancellationToken);
+        if (!isActive)
+        {
+            throw new ModuleNotLicensedException(attribute.Module);
+        }
 
         return HandlerContinuation.Continue;
     }
 }
-
 /*
  * A middleware pipeline a következőképpen épül fel:
  * - A Wolverine a MessageType-hoz tartozó HandlerChain-t hozza létre.

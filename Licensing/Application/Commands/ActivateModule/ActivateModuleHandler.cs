@@ -1,21 +1,25 @@
-using Microsoft.EntityFrameworkCore;
-using Rezilio.Modules.Licensing.Domain;
-using Rezilio.Modules.Licensing.Infrastructure;
-
 namespace Rezilio.Modules.Licensing.Application.Commands.ActivateModule;
 
-public sealed class ActivateModuleHandler
+public sealed class ActivateModuleHandler(LicensingDbContext db)
 {
-    public static async Task Handle(
-        ActivateModuleCommand command,
-        LicensingDbContext db,
+    [WolverinePost("/api/licensing/modules/{tenantId}/{module}/activate")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IResult> Handle(
+        [FromRoute] Guid tenantId,
+        [FromRoute] ModuleType module,
         CancellationToken ct)
     {
-        TenantLicense license = await db.Licenses
-            .FirstOrDefaultAsync(l => l.TenantId == command.TenantId, ct)
-            ?? throw new InvalidOperationException($"Nincs licensz a(z) {command.TenantId} tenanthoz.");
+        TenantLicense? license = await db.Licenses
+            .FirstOrDefaultAsync(l => l.TenantId == tenantId, ct);
 
-        license.ActivateModule(command.Module);
+        if (license is null)
+        {
+            return Results.NotFound($"Nincs licensz a(z) {tenantId} tenanthoz.");
+        }
+
+        license.ActivateModule(module);
         await db.SaveChangesAsync(ct);
+
+        return Results.NoContent();
     }
 }

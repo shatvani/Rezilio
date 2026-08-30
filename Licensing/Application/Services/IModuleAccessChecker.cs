@@ -1,5 +1,3 @@
-using Rezilio.Modules.Licensing.Domain;
-
 namespace Rezilio.Modules.Licensing.Application.Services;
 
 public interface IModuleAccessChecker
