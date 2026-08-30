@@ -1,7 +1,5 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Rezilio.Modules.Licensing.Application.Services;
-using Rezilio.Modules.Licensing.Infrastructure;
 
 namespace Rezilio.Modules.Licensing;
 

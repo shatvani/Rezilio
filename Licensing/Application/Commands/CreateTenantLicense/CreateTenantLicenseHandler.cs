@@ -1,7 +1,4 @@
-using Rezilio.Modules.Licensing.Domain;
-using Rezilio.Modules.Licensing.Infrastructure;
-
-namespace Licensing.Application.Commands.CreateTenantLicense;
+namespace Rezilio.Modules.Licensing.Application.Commands.CreateTenantLicense;
 
 public sealed class CreateTenantLicenseHandler
 {

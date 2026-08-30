@@ -1,21 +1,25 @@
-using Microsoft.EntityFrameworkCore;
-using Rezilio.Modules.Licensing.Domain;
-using Rezilio.Modules.Licensing.Infrastructure;
-
 namespace Rezilio.Modules.Licensing.Application.Commands.DeactivateModule;
 
-public sealed class DeactivateModuleHandler
+public sealed class DeactivateModuleHandler(LicensingDbContext db)
 {
-    public static async Task Handle(
-        DeactivateModuleCommand command,
-        LicensingDbContext db,
+    [WolverinePost("/api/licensing/modules/{tenantId}/{module}/deactivate")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IResult> Handle(
+        [FromRoute] Guid tenantId,
+        [FromRoute] ModuleType module,
         CancellationToken ct)
     {
-        TenantLicense license = await db.Licenses
-            .FirstOrDefaultAsync(l => l.TenantId == command.TenantId, ct)
-            ?? throw new InvalidOperationException($"Nincs licensz a(z) {command.TenantId} tenanthoz.");
+        TenantLicense? license = await db.Licenses
+            .FirstOrDefaultAsync(l => l.TenantId == tenantId, ct);
 
-        license.DeactivateModule(command.Module);
+        if (license is null)
+        {
+            return Results.NotFound($"Nincs licensz a(z) {tenantId} tenanthoz.");
+        }
+
+        license.DeactivateModule(module);
         await db.SaveChangesAsync(ct);
+
+        return Results.NoContent();
     }
 }

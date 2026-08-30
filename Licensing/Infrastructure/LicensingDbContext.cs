@@ -1,6 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-using Rezilio.Modules.Licensing.Domain;
-
 namespace Rezilio.Modules.Licensing.Infrastructure;
 
 public sealed class LicensingDbContext : DbContext
