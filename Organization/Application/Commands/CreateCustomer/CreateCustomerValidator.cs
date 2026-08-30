@@ -1,5 +1,3 @@
-using FluentValidation;
-
 namespace Rezilio.Modules.Organization.Application.Commands.CreateCustomer;
 
 public sealed class CreateCustomerValidator : AbstractValidator<CreateCustomerCommand>

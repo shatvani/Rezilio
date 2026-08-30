@@ -1,5 +1,3 @@
-using FluentValidation;
-
 namespace Rezilio.Modules.Organization.Application.Commands.CreateSupplier;
 
 public sealed class CreateSupplierValidator : AbstractValidator<CreateSupplierCommand>

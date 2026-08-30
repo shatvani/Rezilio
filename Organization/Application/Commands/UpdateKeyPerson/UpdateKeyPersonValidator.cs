@@ -1,5 +1,3 @@
-using FluentValidation;
-
 namespace Rezilio.Modules.Organization.Application.Commands.UpdateKeyPerson;
 
 public sealed class UpdateKeyPersonValidator : AbstractValidator<UpdateKeyPersonCommand>

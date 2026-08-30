@@ -1,5 +1,3 @@
-using FluentValidation;
-
 namespace Rezilio.Modules.Organization.Application.Commands.UpdateCustomer;
 
 public sealed class UpdateCustomerValidator : AbstractValidator<UpdateCustomerCommand>
