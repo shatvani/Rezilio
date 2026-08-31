@@ -1,13 +1,13 @@
 namespace Rezilio.Modules.Organization.Application.Commands.CreateKeyPerson;
 
-public sealed class CreateKeyPersonHandler(OrganizationDbContext db)
+public sealed class CreateKeyPersonHandler(OrganizationDbContext db, ITenantContext tenantContext)
 {
     [WolverinePost("/api/organization/key-persons")]
     [Authorize]
     public async Task<IResult> Handle(CreateKeyPersonCommand command, CancellationToken ct)
     {
         var keyPerson = KeyPerson.Create(
-            command.TenantId,
+            tenantContext.TenantId,
             command.Name,
             command.Title,
             command.Department,

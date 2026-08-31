@@ -1,20 +1,23 @@
-using Rezilio.SharedKernel.Results;
-
 namespace Rezilio.Modules.Organization.Application.Queries.GetBusinessProcessById;
 
 public sealed class GetBusinessProcessByIdHandler
 {
     private readonly OrganizationDbContext _db;
+    private readonly ITenantContext _tenantContext;
 
-    public GetBusinessProcessByIdHandler(OrganizationDbContext db)
+    public GetBusinessProcessByIdHandler(OrganizationDbContext db, ITenantContext tenantContext)
     {
         _db = db;
+        _tenantContext = tenantContext;
     }
 
-    public async Task<Result<BusinessProcessDto>> Handle(GetBusinessProcessByIdQuery query, CancellationToken ct)
+    [WolverineGet("/api/organization/business-processes/{id}")]
+    [Authorize]
+    public async Task<IResult> Handle([FromRoute] Guid id, CancellationToken ct)
     {
         BusinessProcessDto? dto = await _db.BusinessProcesses
-            .Where(b => b.Id == query.Id && b.TenantId == query.TenantId)
+            .AsNoTracking()
+            .Where(b => b.Id == id && b.TenantId == _tenantContext.TenantId)
             .Select(b => new BusinessProcessDto(
                 b.Id, b.TenantId, b.Code, b.Name, b.Category, b.CriticalityLevel,
                 b.OwnerId, b.OrgUnitId, b.MaxTolerableDowntimeMinutes,
@@ -23,9 +26,9 @@ public sealed class GetBusinessProcessByIdHandler
 
         if (dto is null)
         {
-            return Result.Failure<BusinessProcessDto>("Business process not found.");
+            return Results.NotFound("Business process not found.");
         }
 
-        return Result.Success(dto);
+        return Results.Ok(dto);
     }
 }

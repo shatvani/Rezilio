@@ -5,7 +5,8 @@ namespace Rezilio.Modules.Organization.Application.Commands.ConfirmImport;
 
 public sealed class ConfirmImportHandler(
     OrganizationDbContext db,
-    IExcelImportParser parser)
+    IExcelImportParser parser,
+    ITenantContext tenantContext)
 {
     [WolverinePost("/api/organization/import/{importJobId}/confirm")]
     [Authorize]
@@ -14,7 +15,7 @@ public sealed class ConfirmImportHandler(
         CancellationToken ct)
     {
         ImportJob? job = await db.ImportJobs
-            .FirstOrDefaultAsync(j => j.Id == importJobId, ct);
+            .FirstOrDefaultAsync(j => j.Id == importJobId && j.TenantId == tenantContext.TenantId, ct);
 
         if (job is null)
         {

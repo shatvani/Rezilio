@@ -2,7 +2,7 @@ namespace Rezilio.Modules.Organization.Application.Commands.CreateBusinessProces
 
 public sealed class CreateBusinessProcessValidator : AbstractValidator<CreateBusinessProcessCommand>
 {
-    public CreateBusinessProcessValidator(OrganizationDbContext db)
+    public CreateBusinessProcessValidator(OrganizationDbContext db, ITenantContext tenantContext)
     {
         RuleFor(x => x.TenantId)
             .NotEmpty().WithMessage("A TenantId kötelező.");
@@ -20,9 +20,9 @@ public sealed class CreateBusinessProcessValidator : AbstractValidator<CreateBus
             .MaximumLength(100).WithMessage("A kategória maximum 100 karakter lehet.");
 
         RuleFor(x => x.OwnerId)
-            .MustAsync(async (command, ownerId, ct) =>
+            .MustAsync(async (ownerId, ct) =>
                 ownerId is null ||
-                await db.KeyPersons.AnyAsync(k => k.Id == ownerId.Value && k.TenantId == command.TenantId, ct))
+                await db.KeyPersons.AnyAsync(k => k.Id == ownerId.Value && k.TenantId == tenantContext.TenantId, ct))
             .WithMessage("A megadott Owner nem létező kulcsszemélyre mutat.");
     }
 }

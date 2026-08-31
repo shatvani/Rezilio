@@ -2,7 +2,7 @@ using Rezilio.Modules.Organization.Application.Queries.GetOrganizationalUnits;
 
 namespace Rezilio.Modules.Organization.Application.Queries.GetOrganizationalUnit;
 
-public sealed class GetOrganizationalUnitHandler(OrganizationDbContext db)
+public sealed class GetOrganizationalUnitHandler(OrganizationDbContext db, ITenantContext tenantContext)
 {
     [WolverineGet("/api/organization/units/{id}")]
     [Authorize]
@@ -12,7 +12,7 @@ public sealed class GetOrganizationalUnitHandler(OrganizationDbContext db)
     {
         var unit = await db.OrganizationalUnits
             .AsNoTracking()
-            .Where(u => u.Id == id)
+            .Where(u => u.Id == id && u.TenantId == tenantContext.TenantId)
             .Select(u => new OrganizationalUnitResponse(u.Id, u.Name, u.Code, u.ParentId, u.Description))
             .FirstOrDefaultAsync(ct);
 

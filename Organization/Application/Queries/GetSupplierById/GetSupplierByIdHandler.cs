@@ -1,6 +1,6 @@
 namespace Rezilio.Modules.Organization.Application.Queries.GetSupplierById;
 
-public sealed class GetSupplierByIdHandler(OrganizationDbContext db)
+public sealed class GetSupplierByIdHandler(OrganizationDbContext db, ITenantContext tenantContext)
 {
     [WolverineGet("/api/organization/suppliers/{id}")]
     [Authorize]
@@ -8,7 +8,7 @@ public sealed class GetSupplierByIdHandler(OrganizationDbContext db)
     {
         var supplier = await db.Suppliers
             .AsNoTracking()
-            .FirstOrDefaultAsync(s => s.Id == id, ct);
+            .FirstOrDefaultAsync(s => s.Id == id && s.TenantId == tenantContext.TenantId, ct);
 
         if (supplier is null)
         {

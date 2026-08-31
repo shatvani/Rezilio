@@ -1,5 +1,4 @@
 using Rezilio.Modules.Organization.Application.Services;
-using Rezilio.SharedKernel.Multitenancy;
 
 namespace Rezilio.Modules.Organization.Application.Commands.UploadAndValidateImport;
 

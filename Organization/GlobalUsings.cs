@@ -6,3 +6,4 @@ global using Rezilio.Modules.Organization.Domain;
 global using Rezilio.Modules.Organization.Infrastructure;
 global using Wolverine.Http;
 global using FluentValidation;
+global using Rezilio.SharedKernel.Multitenancy;

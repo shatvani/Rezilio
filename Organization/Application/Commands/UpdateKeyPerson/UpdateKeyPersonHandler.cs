@@ -1,12 +1,13 @@
 namespace Rezilio.Modules.Organization.Application.Commands.UpdateKeyPerson;
 
-public sealed class UpdateKeyPersonHandler(OrganizationDbContext db)
+public sealed class UpdateKeyPersonHandler(OrganizationDbContext db, ITenantContext tenantContext)
 {
     [WolverinePut("/api/organization/key-persons/{id}")]
     [Authorize]
     public async Task<IResult> Handle([FromRoute] Guid id, UpdateKeyPersonCommand command, CancellationToken ct)
     {
-        var keyPerson = await db.KeyPersons.FirstOrDefaultAsync(k => k.Id == id, ct);
+        var keyPerson = await db.KeyPersons
+            .FirstOrDefaultAsync(k => k.Id == id && k.TenantId == tenantContext.TenantId, ct);
         if (keyPerson is null)
         {
             return Results.NotFound($"KeyPerson {id} nem található.");

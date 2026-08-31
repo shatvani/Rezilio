@@ -1,14 +1,14 @@
 namespace Rezilio.Modules.Organization.Application.Queries.GetKeyPersonsByTenant;
 
-public sealed class GetKeyPersonsByTenantHandler(OrganizationDbContext db)
+public sealed class GetKeyPersonsByTenantHandler(OrganizationDbContext db, ITenantContext tenantContext)
 {
     [WolverineGet("/api/organization/key-persons")]
     [Authorize]
-    public async Task<IResult> Handle([FromQuery] Guid tenantId, CancellationToken ct)
+    public async Task<IResult> Handle(CancellationToken ct)
     {
         var keyPersons = await db.KeyPersons
             .AsNoTracking()
-            .Where(k => k.TenantId == tenantId)
+            .Where(k => k.TenantId == tenantContext.TenantId)
             .OrderBy(k => k.Name)
             .Select(k => new
             {

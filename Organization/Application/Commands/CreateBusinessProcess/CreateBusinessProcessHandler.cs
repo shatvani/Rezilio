@@ -3,10 +3,12 @@ namespace Rezilio.Modules.Organization.Application.Commands.CreateBusinessProces
 public sealed class CreateBusinessProcessHandler
 {
     private readonly OrganizationDbContext _db;
+    private readonly ITenantContext _tenantContext;
 
-    public CreateBusinessProcessHandler(OrganizationDbContext db)
+    public CreateBusinessProcessHandler(OrganizationDbContext db, ITenantContext tenantContext)
     {
         _db = db;
+        _tenantContext = tenantContext;
     }
 
     [WolverinePost("/api/organization/business-processes")]
@@ -14,7 +16,7 @@ public sealed class CreateBusinessProcessHandler
     public async Task<IResult> Handle(CreateBusinessProcessCommand command, CancellationToken ct)
     {
         bool codeExists = await _db.BusinessProcesses
-            .AnyAsync(b => b.TenantId == command.TenantId
+            .AnyAsync(b => b.TenantId == _tenantContext.TenantId
                         && b.Code == command.Code.Trim().ToUpperInvariant(), ct);
 
         if (codeExists)
@@ -23,7 +25,7 @@ public sealed class CreateBusinessProcessHandler
         }
 
         var result = BusinessProcess.Create(
-            command.TenantId,
+            _tenantContext.TenantId,
             command.Code,
             command.Name,
             command.Category,

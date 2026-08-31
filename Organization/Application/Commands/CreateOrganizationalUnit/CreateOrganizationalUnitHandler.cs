@@ -2,7 +2,7 @@ namespace Rezilio.Modules.Organization.Application.Commands.CreateOrganizational
 
 public sealed record CreateOrganizationalUnitResponse(Guid Id, string Name, string Code);
 
-public sealed class CreateOrganizationalUnitHandler(OrganizationDbContext db)
+public sealed class CreateOrganizationalUnitHandler(OrganizationDbContext db, ITenantContext tenantContext)
 {
     [WolverinePost("/api/organization/units")]
     [Authorize]
@@ -11,7 +11,7 @@ public sealed class CreateOrganizationalUnitHandler(OrganizationDbContext db)
         CancellationToken ct)
     {
         bool codeExists = await db.OrganizationalUnits
-            .AnyAsync(u => u.TenantId == command.TenantId
+            .AnyAsync(u => u.TenantId == tenantContext.TenantId
                         && u.Code == command.Code.Trim().ToUpperInvariant(), ct);
 
         if (codeExists)
@@ -20,7 +20,7 @@ public sealed class CreateOrganizationalUnitHandler(OrganizationDbContext db)
         }
 
         var unit = OrganizationalUnit.Create(
-            command.TenantId,
+            tenantContext.TenantId,
             command.Name,
             command.Code,
             command.ParentId,

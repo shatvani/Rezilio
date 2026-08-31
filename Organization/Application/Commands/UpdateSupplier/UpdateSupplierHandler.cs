@@ -1,19 +1,20 @@
 namespace Rezilio.Modules.Organization.Application.Commands.UpdateSupplier;
 
-public sealed class UpdateSupplierHandler(OrganizationDbContext db)
+public sealed class UpdateSupplierHandler(OrganizationDbContext db, ITenantContext tenantContext)
 {
     [WolverinePut("/api/organization/suppliers/{id}")]
     [Authorize]
     public async Task<IResult> Handle([FromRoute] Guid id, UpdateSupplierCommand command, CancellationToken ct)
     {
-        var supplier = await db.Suppliers.FirstOrDefaultAsync(s => s.Id == id, ct);
+        var supplier = await db.Suppliers
+            .FirstOrDefaultAsync(s => s.Id == id && s.TenantId == tenantContext.TenantId, ct);
         if (supplier is null)
         {
             return Results.NotFound($"Supplier {id} nem található.");
         }
 
         bool codeExists = await db.Suppliers
-            .AnyAsync(s => s.TenantId == supplier.TenantId
+            .AnyAsync(s => s.TenantId == tenantContext.TenantId
                         && s.Code == command.Code.Trim().ToUpperInvariant()
                         && s.Id != id, ct);
 

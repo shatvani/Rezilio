@@ -1,6 +1,6 @@
 namespace Rezilio.Modules.Organization.Application.Commands.DeleteOrganizationalUnit;
 
-public sealed class DeleteOrganizationalUnitHandler(OrganizationDbContext db)
+public sealed class DeleteOrganizationalUnitHandler(OrganizationDbContext db, ITenantContext tenantContext)
 {
     [WolverineDelete("/api/organization/units/{id}")]
     [Authorize]
@@ -9,7 +9,7 @@ public sealed class DeleteOrganizationalUnitHandler(OrganizationDbContext db)
         CancellationToken ct)
     {
         OrganizationalUnit? unit = await db.OrganizationalUnits
-            .FirstOrDefaultAsync(u => u.Id == id, ct);
+            .FirstOrDefaultAsync(u => u.Id == id && u.TenantId == tenantContext.TenantId, ct);
 
         if (unit is null)
         {
