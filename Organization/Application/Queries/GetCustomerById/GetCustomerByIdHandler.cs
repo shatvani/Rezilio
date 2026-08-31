@@ -1,6 +1,6 @@
 namespace Rezilio.Modules.Organization.Application.Queries.GetCustomerById;
 
-public sealed class GetCustomerByIdHandler(OrganizationDbContext db)
+public sealed class GetCustomerByIdHandler(OrganizationDbContext db, ITenantContext tenantContext)
 {
     [WolverineGet("/api/organization/customers/{id}")]
     [Authorize]
@@ -8,7 +8,7 @@ public sealed class GetCustomerByIdHandler(OrganizationDbContext db)
     {
         var customer = await db.Customers
             .AsNoTracking()
-            .FirstOrDefaultAsync(c => c.Id == id, ct);
+            .FirstOrDefaultAsync(c => c.Id == id && c.TenantId == tenantContext.TenantId, ct);
 
         if (customer is null)
         {

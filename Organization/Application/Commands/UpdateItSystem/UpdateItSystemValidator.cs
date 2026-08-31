@@ -2,7 +2,7 @@ namespace Rezilio.Modules.Organization.Application.Commands.UpdateItSystem;
 
 public sealed class UpdateItSystemValidator : AbstractValidator<UpdateItSystemCommand>
 {
-    public UpdateItSystemValidator(OrganizationDbContext db)
+    public UpdateItSystemValidator(OrganizationDbContext db, ITenantContext tenantContext)
     {
         RuleFor(x => x.Id)
             .NotEmpty().WithMessage("Az Id kötelező.");
@@ -25,9 +25,9 @@ public sealed class UpdateItSystemValidator : AbstractValidator<UpdateItSystemCo
             .MaximumLength(100).WithMessage("A verzió maximum 100 karakter lehet.");
 
         RuleFor(x => x.OwnerId)
-            .MustAsync(async (command, ownerId, ct) =>
+            .MustAsync(async (ownerId, ct) =>
                 ownerId is null ||
-                await db.KeyPersons.AnyAsync(k => k.Id == ownerId.Value && k.TenantId == command.TenantId, ct))
+                await db.KeyPersons.AnyAsync(k => k.Id == ownerId.Value && k.TenantId == tenantContext.TenantId, ct))
             .WithMessage("A megadott Owner nem létező kulcsszemélyre mutat.");
     }
 }

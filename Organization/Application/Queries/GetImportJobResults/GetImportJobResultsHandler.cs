@@ -6,7 +6,7 @@ public sealed record ImportRowResultResponse(
     string? ErrorMessage,
     string? ColumnName);
 
-public sealed class GetImportJobResultsHandler(OrganizationDbContext db)
+public sealed class GetImportJobResultsHandler(OrganizationDbContext db, ITenantContext tenantContext)
 {
     [WolverineGet("/api/organization/import/{importJobId}/results")]
     [Authorize]
@@ -17,7 +17,7 @@ public sealed class GetImportJobResultsHandler(OrganizationDbContext db)
     {
         ImportJob? job = await db.ImportJobs
             .AsNoTracking()
-            .FirstOrDefaultAsync(j => j.Id == importJobId, ct);
+            .FirstOrDefaultAsync(j => j.Id == importJobId && j.TenantId == tenantContext.TenantId, ct);
 
         if (job is null)
         {

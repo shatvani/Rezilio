@@ -1,13 +1,13 @@
 namespace Rezilio.Modules.Organization.Application.Commands.CreateCustomer;
 
-public sealed class CreateCustomerHandler(OrganizationDbContext db)
+public sealed class CreateCustomerHandler(OrganizationDbContext db, ITenantContext tenantContext)
 {
     [WolverinePost("/api/organization/customers")]
     [Authorize]
     public async Task<IResult> Handle(CreateCustomerCommand command, CancellationToken ct)
     {
         bool codeExists = await db.Customers
-            .AnyAsync(c => c.TenantId == command.TenantId
+            .AnyAsync(c => c.TenantId == tenantContext.TenantId
                         && c.Code == command.Code.Trim().ToUpperInvariant(), ct);
 
         if (codeExists)
@@ -16,7 +16,7 @@ public sealed class CreateCustomerHandler(OrganizationDbContext db)
         }
 
         var customer = Customer.Create(
-            command.TenantId,
+            tenantContext.TenantId,
             command.Name,
             command.Code,
             command.Industry,

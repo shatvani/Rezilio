@@ -3,10 +3,12 @@ namespace Rezilio.Modules.Organization.Application.Commands.UpdateItSystem;
 public sealed class UpdateItSystemHandler
 {
     private readonly OrganizationDbContext _db;
+    private readonly ITenantContext _tenantContext;
 
-    public UpdateItSystemHandler(OrganizationDbContext db)
+    public UpdateItSystemHandler(OrganizationDbContext db, ITenantContext tenantContext)
     {
         _db = db;
+        _tenantContext = tenantContext;
     }
 
     [WolverinePut("/api/organization/it-systems/{id}")]
@@ -14,7 +16,7 @@ public sealed class UpdateItSystemHandler
     public async Task<IResult> Handle([FromRoute] Guid id, UpdateItSystemCommand command, CancellationToken ct)
     {
         ItSystem? system = await _db.ItSystems
-            .FirstOrDefaultAsync(s => s.Id == id && s.TenantId == command.TenantId, ct);
+            .FirstOrDefaultAsync(s => s.Id == id && s.TenantId == _tenantContext.TenantId, ct);
 
         if (system is null)
         {
@@ -22,7 +24,7 @@ public sealed class UpdateItSystemHandler
         }
 
         bool codeExists = await _db.ItSystems
-            .AnyAsync(s => s.TenantId == command.TenantId
+            .AnyAsync(s => s.TenantId == _tenantContext.TenantId
                         && s.Code == command.Code.Trim().ToUpperInvariant()
                         && s.Id != id, ct);
 

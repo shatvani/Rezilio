@@ -1,7 +1,5 @@
 namespace Rezilio.Modules.Organization.Application.Queries.GetItSystemById;
 
-public sealed record GetItSystemByIdQuery(Guid Id, Guid TenantId);
-
 public sealed record ItSystemDto(
     Guid Id,
     Guid TenantId,

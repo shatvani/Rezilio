@@ -523,6 +523,20 @@
 
 ---
 
+### FIX – Organization modul: TenantId enforcement handler-szinten
+> **Branch:** `fix/org-tenant-context-enforcement`
+
+- [ ] Minden Organization Create/Update/Delete/Get-by-id/Get-by-tenant handler az ITenantContext.TenantId-t
+      használja szűrésre/létrehozásra, nem a kliens által küldött TenantId mezőt/paramétert
+- [ ] 1. csoport: OrganizationalUnit, Customer, Supplier, KeyPerson
+- [ ] 2. csoport: ItSystem, BusinessProcess (validátorokkal együtt, külön kör)
+
+**Megjegyzés:** audit során feltárt hiányosság (nem story/4.16 scope) — a kliens által küldött
+TenantId mező a Command/Query rekordokban marad (nem törjük a frontendet), de a szerver
+mostantól nem bízik meg benne.
+
+---
+
 ## EPIC 1 – MVP (Core modulok)
 
 > **Cél:** Önmagában értékesíthető Basic csomag. Teljes kockázati életciklus.  

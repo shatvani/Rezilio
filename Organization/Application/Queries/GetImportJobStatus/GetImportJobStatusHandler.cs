@@ -10,7 +10,7 @@ public sealed record ImportJobStatusResponse(
     DateTimeOffset CreatedAt,
     DateTimeOffset? CompletedAt);
 
-public sealed class GetImportJobStatusHandler(OrganizationDbContext db)
+public sealed class GetImportJobStatusHandler(OrganizationDbContext db, ITenantContext tenantContext)
 {
     [WolverineGet("/api/organization/import/{importJobId}/status")]
     [Authorize]
@@ -20,7 +20,7 @@ public sealed class GetImportJobStatusHandler(OrganizationDbContext db)
     {
         ImportJob? job = await db.ImportJobs
             .AsNoTracking()
-            .FirstOrDefaultAsync(j => j.Id == importJobId, ct);
+            .FirstOrDefaultAsync(j => j.Id == importJobId && j.TenantId == tenantContext.TenantId, ct);
 
         if (job is null)
         {

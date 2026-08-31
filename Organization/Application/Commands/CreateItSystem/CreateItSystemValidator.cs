@@ -2,7 +2,7 @@ namespace Rezilio.Modules.Organization.Application.Commands.CreateItSystem;
 
 public sealed class CreateItSystemValidator : AbstractValidator<CreateItSystemCommand>
 {
-    public CreateItSystemValidator(OrganizationDbContext db)
+    public CreateItSystemValidator(OrganizationDbContext db, ITenantContext tenantContext)
     {
         RuleFor(x => x.TenantId)
             .NotEmpty().WithMessage("A TenantId kötelező.");
@@ -22,9 +22,9 @@ public sealed class CreateItSystemValidator : AbstractValidator<CreateItSystemCo
             .MaximumLength(100).WithMessage("A verzió maximum 100 karakter lehet.");
 
         RuleFor(x => x.OwnerId)
-            .MustAsync(async (command, ownerId, ct) =>
+            .MustAsync(async (ownerId, ct) =>
                 ownerId is null ||
-                await db.KeyPersons.AnyAsync(k => k.Id == ownerId.Value && k.TenantId == command.TenantId, ct))
+                await db.KeyPersons.AnyAsync(k => k.Id == ownerId.Value && k.TenantId == tenantContext.TenantId, ct))
             .WithMessage("A megadott Owner nem létező kulcsszemélyre mutat.");
     }
 }

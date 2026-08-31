@@ -1,6 +1,6 @@
 namespace Rezilio.Modules.Organization.Application.Commands.UpdateOrganizationalUnit;
 
-public sealed class UpdateOrganizationalUnitHandler(OrganizationDbContext db)
+public sealed class UpdateOrganizationalUnitHandler(OrganizationDbContext db, ITenantContext tenantContext)
 {
     [WolverinePut("/api/organization/units/{id}")]
     [Authorize]
@@ -10,7 +10,7 @@ public sealed class UpdateOrganizationalUnitHandler(OrganizationDbContext db)
         CancellationToken ct)
     {
         OrganizationalUnit? unit = await db.OrganizationalUnits
-            .FirstOrDefaultAsync(u => u.Id == id, ct);
+            .FirstOrDefaultAsync(u => u.Id == id && u.TenantId == tenantContext.TenantId, ct);
 
         if (unit is null)
         {
@@ -18,7 +18,7 @@ public sealed class UpdateOrganizationalUnitHandler(OrganizationDbContext db)
         }
 
         bool codeExists = await db.OrganizationalUnits
-            .AnyAsync(u => u.TenantId == unit.TenantId
+            .AnyAsync(u => u.TenantId == tenantContext.TenantId
                         && u.Code == command.Code.Trim().ToUpperInvariant()
                         && u.Id != id, ct);
 

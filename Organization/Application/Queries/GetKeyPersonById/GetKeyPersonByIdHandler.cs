@@ -1,6 +1,6 @@
 namespace Rezilio.Modules.Organization.Application.Queries.GetKeyPersonById;
 
-public sealed class GetKeyPersonByIdHandler(OrganizationDbContext db)
+public sealed class GetKeyPersonByIdHandler(OrganizationDbContext db, ITenantContext tenantContext)
 {
     [WolverineGet("/api/organization/key-persons/{id}")]
     [Authorize]
@@ -8,7 +8,7 @@ public sealed class GetKeyPersonByIdHandler(OrganizationDbContext db)
     {
         var keyPerson = await db.KeyPersons
             .AsNoTracking()
-            .FirstOrDefaultAsync(k => k.Id == id, ct);
+            .FirstOrDefaultAsync(k => k.Id == id && k.TenantId == tenantContext.TenantId, ct);
 
         if (keyPerson is null)
         {

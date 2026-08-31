@@ -2,18 +2,19 @@ using Rezilio.SharedKernel.DDD.VOs;
 
 namespace Rezilio.Modules.Organization.Application.Commands.UpdateTenantSettings;
 
-public sealed class UpdateTenantSettingsHandler(OrganizationDbContext db)
+public sealed class UpdateTenantSettingsHandler(OrganizationDbContext db, ITenantContext tenantContext)
 {
     [WolverinePost("/api/organization/settings")]
+    [Authorize]
     public async Task<IResult> Handle(UpdateTenantSettingsCommand command, CancellationToken ct)
     {
         var settings = await db.TenantSettings
-            .FirstOrDefaultAsync(s => s.TenantId == command.TenantId, ct);
+            .FirstOrDefaultAsync(s => s.TenantId == tenantContext.TenantId, ct);
 
         if (settings is null)
         {
             settings = TenantSettings.Create(
-                command.TenantId,
+                tenantContext.TenantId,
                 new CurrencyCode(command.DefaultCurrency),
                 new LanguageCode(command.DefaultLanguage),
                 command.Locale,

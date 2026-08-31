@@ -3,10 +3,12 @@ namespace Rezilio.Modules.Organization.Application.Commands.UpdateBusinessProces
 public sealed class UpdateBusinessProcessHandler
 {
     private readonly OrganizationDbContext _db;
+    private readonly ITenantContext _tenantContext;
 
-    public UpdateBusinessProcessHandler(OrganizationDbContext db)
+    public UpdateBusinessProcessHandler(OrganizationDbContext db, ITenantContext tenantContext)
     {
         _db = db;
+        _tenantContext = tenantContext;
     }
 
     [WolverinePut("/api/organization/business-processes/{id}")]
@@ -14,7 +16,7 @@ public sealed class UpdateBusinessProcessHandler
     public async Task<IResult> Handle([FromRoute] Guid id, UpdateBusinessProcessCommand command, CancellationToken ct)
     {
         BusinessProcess? bp = await _db.BusinessProcesses
-            .FirstOrDefaultAsync(b => b.Id == id && b.TenantId == command.TenantId, ct);
+            .FirstOrDefaultAsync(b => b.Id == id && b.TenantId == _tenantContext.TenantId, ct);
 
         if (bp is null)
         {
@@ -22,7 +24,7 @@ public sealed class UpdateBusinessProcessHandler
         }
 
         bool codeExists = await _db.BusinessProcesses
-            .AnyAsync(b => b.TenantId == command.TenantId
+            .AnyAsync(b => b.TenantId == _tenantContext.TenantId
                         && b.Code == command.Code.Trim().ToUpperInvariant()
                         && b.Id != id, ct);
 

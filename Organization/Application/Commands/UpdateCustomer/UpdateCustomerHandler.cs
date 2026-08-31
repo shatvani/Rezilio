@@ -1,19 +1,20 @@
 namespace Rezilio.Modules.Organization.Application.Commands.UpdateCustomer;
 
-public sealed class UpdateCustomerHandler(OrganizationDbContext db)
+public sealed class UpdateCustomerHandler(OrganizationDbContext db, ITenantContext tenantContext)
 {
     [WolverinePut("/api/organization/customers/{id}")]
     [Authorize]
     public async Task<IResult> Handle([FromRoute] Guid id, UpdateCustomerCommand command, CancellationToken ct)
     {
-        var customer = await db.Customers.FirstOrDefaultAsync(c => c.Id == id, ct);
+        var customer = await db.Customers
+            .FirstOrDefaultAsync(c => c.Id == id && c.TenantId == tenantContext.TenantId, ct);
         if (customer is null)
         {
             return Results.NotFound($"Customer {id} nem található.");
         }
 
         bool codeExists = await db.Customers
-            .AnyAsync(c => c.TenantId == customer.TenantId
+            .AnyAsync(c => c.TenantId == tenantContext.TenantId
                         && c.Code == command.Code.Trim().ToUpperInvariant()
                         && c.Id != id, ct);
 

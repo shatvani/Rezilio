@@ -1,13 +1,13 @@
 namespace Rezilio.Modules.Organization.Application.Commands.CreateSupplier;
 
-public sealed class CreateSupplierHandler(OrganizationDbContext db)
+public sealed class CreateSupplierHandler(OrganizationDbContext db, ITenantContext tenantContext)
 {
     [WolverinePost("/api/organization/suppliers")]
     [Authorize]
     public async Task<IResult> Handle(CreateSupplierCommand command, CancellationToken ct)
     {
         bool codeExists = await db.Suppliers
-            .AnyAsync(s => s.TenantId == command.TenantId
+            .AnyAsync(s => s.TenantId == tenantContext.TenantId
                         && s.Code == command.Code.Trim().ToUpperInvariant(), ct);
 
         if (codeExists)
@@ -16,7 +16,7 @@ public sealed class CreateSupplierHandler(OrganizationDbContext db)
         }
 
         var supplier = Supplier.Create(
-            command.TenantId,
+            tenantContext.TenantId,
             command.Name,
             command.Code,
             command.Industry,
