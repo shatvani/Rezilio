@@ -61,6 +61,20 @@ builder.Services.AddScoped<ITenantContext, FixedTenantContext>();
 builder.Services.AddExceptionHandler<ModuleNotLicensedExceptionHandler>();
 builder.Services.AddProblemDetails();
 
+// CORS – a frontend (Next.js, jellemzően más porton fut) böngészős hívásaihoz.
+// Az engedélyezett origin-eket konfigurációból olvassuk (appsettings.Development.json:
+// Cors:AllowedOrigins), hogy környezetenként (dev/éles) eltérő legyen, kódmódosítás nélkül.
+var corsAllowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Frontend", policy =>
+    {
+        policy.WithOrigins(corsAllowedOrigins)
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 builder.Services.AddHealthChecks();
 builder.Services.AddWolverineHttp();
 
@@ -74,6 +88,8 @@ builder.Services.AddLocalization(opts => opts.ResourcesPath = "Resources");
 var app = builder.Build();
 
 app.UseExceptionHandler();
+
+app.UseCors("Frontend");
 
 // Dev módban automatikus migráció – production-ban kézi migráció
 if (app.Environment.IsDevelopment())
