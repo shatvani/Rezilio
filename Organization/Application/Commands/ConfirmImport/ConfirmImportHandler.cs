@@ -190,10 +190,15 @@ public sealed class ConfirmImportHandler(
         var orgUnitsByCode = await db.OrganizationalUnits
             .Where(u => u.TenantId == job.TenantId)
             .ToDictionaryAsync(u => u.Code, u => u.Id, ct);
+        var existingCodes = await db.KeyPersons
+            .Where(k => k.TenantId == job.TenantId)
+            .Select(k => k.Code)
+            .ToHashSetAsync(ct);
 
         foreach (ParsedRow row in rows.Where(r => r.IsValid))
         {
             string name = row.Values["Name"]!;
+            string code = row.Values["Code"]!;
             row.Values.TryGetValue("Title", out string? title);
             row.Values.TryGetValue("Department", out string? department);
             row.Values.TryGetValue("OrgUnitCode", out string? orgUnitCode);
@@ -202,21 +207,28 @@ public sealed class ConfirmImportHandler(
             row.Values.TryGetValue("BackupPersonName", out string? backupPersonName);
             row.Values.TryGetValue("Description", out string? description);
 
+            string normalizedCode = code.Trim().ToUpperInvariant();
+            if (existingCodes.Contains(normalizedCode))
+            {
+                continue;
+            }
+
             Guid? orgUnitId = null;
             if (!string.IsNullOrWhiteSpace(orgUnitCode))
             {
-                string normalized = orgUnitCode.Trim().ToUpperInvariant();
-                if (orgUnitsByCode.TryGetValue(normalized, out Guid uid))
+                string normalizedOrgUnitCode = orgUnitCode.Trim().ToUpperInvariant();
+                if (orgUnitsByCode.TryGetValue(normalizedOrgUnitCode, out Guid uid))
                 {
                     orgUnitId = uid;
                 }
             }
 
             var keyPerson = KeyPerson.Create(
-                job.TenantId, name, title, department,
+                job.TenantId, name, code, title, department,
                 orgUnitId, email, phone, backupPersonName, description);
 
             db.KeyPersons.Add(keyPerson);
+            existingCodes.Add(normalizedCode);
         }
 
         await db.SaveChangesAsync(ct);
@@ -232,10 +244,7 @@ public sealed class ConfirmImportHandler(
 
         Dictionary<string, Guid> keyPersonsByCode = await db.KeyPersons
             .Where(k => k.TenantId == job.TenantId)
-            .ToDictionaryAsync(k => k.Name, k => k.Id, ct);
-
-        // OwnerId lookup: OwnerCode oszlop → KeyPerson.Name alapú keresés
-        // Ha pontosabb matching kell, KeyPersonnek is kellene Code mező
+            .ToDictionaryAsync(k => k.Code, k => k.Id, ct);
 
         foreach (ParsedRow row in rows)
         {
@@ -256,7 +265,7 @@ public sealed class ConfirmImportHandler(
             }
 
             Guid? ownerId = null;
-            string ownerCode = (row.Values.GetValueOrDefault("OwnerCode") ?? string.Empty).Trim();
+            string ownerCode = (row.Values.GetValueOrDefault("OwnerCode") ?? string.Empty).Trim().ToUpperInvariant();
             if (!string.IsNullOrWhiteSpace(ownerCode) && keyPersonsByCode.TryGetValue(ownerCode, out Guid kpId))
             {
                 ownerId = kpId;
@@ -314,9 +323,9 @@ public sealed class ConfirmImportHandler(
             .Where(u => u.TenantId == job.TenantId)
             .ToDictionaryAsync(u => u.Code, u => u.Id, ct);
 
-        Dictionary<string, Guid> keyPersonsByName = await db.KeyPersons
+        Dictionary<string, Guid> keyPersonsByCode = await db.KeyPersons
             .Where(k => k.TenantId == job.TenantId)
-            .ToDictionaryAsync(k => k.Name, k => k.Id, ct);
+            .ToDictionaryAsync(k => k.Code, k => k.Id, ct);
 
         Dictionary<string, Guid> itSystemsByCode = await db.ItSystems
             .Where(s => s.TenantId == job.TenantId)
@@ -327,8 +336,8 @@ public sealed class ConfirmImportHandler(
             string code = (row.Values.GetValueOrDefault("Code") ?? string.Empty).Trim().ToUpperInvariant();
 
             Guid? ownerId = null;
-            string ownerName = (row.Values.GetValueOrDefault("OwnerCode") ?? string.Empty).Trim();
-            if (!string.IsNullOrWhiteSpace(ownerName) && keyPersonsByName.TryGetValue(ownerName, out Guid kpId))
+            string ownerCode = (row.Values.GetValueOrDefault("OwnerCode") ?? string.Empty).Trim().ToUpperInvariant();
+            if (!string.IsNullOrWhiteSpace(ownerCode) && keyPersonsByCode.TryGetValue(ownerCode, out Guid kpId))
             {
                 ownerId = kpId;
             }

@@ -3,6 +3,7 @@ namespace Rezilio.Modules.Organization.Application.Commands.UpdateKeyPerson;
 public sealed record UpdateKeyPersonCommand(
     Guid Id,
     string Name,
+    string Code,
     string? Title,
     string? Department,
     Guid? OrgUnitId,

@@ -20,6 +20,7 @@ public sealed class GetKeyPersonByIdHandler(OrganizationDbContext db, ITenantCon
             keyPerson.Id,
             keyPerson.TenantId,
             keyPerson.Name,
+            keyPerson.Code,
             keyPerson.Title,
             keyPerson.Department,
             keyPerson.OrgUnitId,

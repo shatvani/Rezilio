@@ -6,6 +6,7 @@ public sealed class KeyPerson : AggregateRoot<Guid>
 {
     public Guid TenantId { get; private set; }
     public string Name { get; private set; } = default!;
+    public string Code { get; private set; } = default!;
     public string? Title { get; private set; }
     public string? Department { get; private set; }
     public Guid? OrgUnitId { get; private set; }
@@ -19,6 +20,7 @@ public sealed class KeyPerson : AggregateRoot<Guid>
     public static KeyPerson Create(
         Guid tenantId,
         string name,
+        string code,
         string? title = null,
         string? department = null,
         Guid? orgUnitId = null,
@@ -32,6 +34,7 @@ public sealed class KeyPerson : AggregateRoot<Guid>
             Id = Guid.NewGuid(),
             TenantId = tenantId,
             Name = name,
+            Code = code.Trim().ToUpperInvariant(),
             Title = title,
             Department = department,
             OrgUnitId = orgUnitId,
@@ -44,6 +47,7 @@ public sealed class KeyPerson : AggregateRoot<Guid>
 
     public void Update(
         string name,
+        string code,
         string? title = null,
         string? department = null,
         Guid? orgUnitId = null,
@@ -53,6 +57,7 @@ public sealed class KeyPerson : AggregateRoot<Guid>
         string? description = null)
     {
         Name = name;
+        Code = code.Trim().ToUpperInvariant();
         Title = title;
         Department = department;
         OrgUnitId = orgUnitId;

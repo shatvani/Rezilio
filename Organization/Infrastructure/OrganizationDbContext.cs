@@ -120,6 +120,7 @@ public sealed class OrganizationDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.TenantId).IsRequired();
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Code).IsRequired().HasMaxLength(50);
             entity.Property(e => e.Title).HasMaxLength(100);
             entity.Property(e => e.Department).HasMaxLength(100);
             entity.Property(e => e.Email).HasMaxLength(200);
@@ -128,6 +129,7 @@ public sealed class OrganizationDbContext : DbContext
             entity.Property(e => e.Description).HasMaxLength(500);
             entity.HasIndex(e => e.TenantId);
             entity.HasIndex(e => new { e.TenantId, e.OrgUnitId });
+            entity.HasIndex(e => new { e.TenantId, e.Code }).IsUnique();
         });
 
         modelBuilder.Entity<ItSystem>(e =>

@@ -7,6 +7,7 @@ public sealed class KeyPersonColumnDefinitionProvider : IImportColumnDefinitionP
     public IReadOnlyList<ImportColumnDefinition> GetColumns() =>
     [
         new ImportColumnDefinition("Name",             IsRequired: true,  ExampleValue: "Kovács János"),
+        new ImportColumnDefinition("Code",             IsRequired: true,  ExampleValue: "KOVACS.J", Description: "Egyedi azonosító kód (erre hivatkoznak az IT rendszerek/folyamatok OwnerCode oszlopai)"),
         new ImportColumnDefinition("Title",            IsRequired: false, ExampleValue: "IT Igazgató"),
         new ImportColumnDefinition("Department",       IsRequired: false, ExampleValue: "Informatika"),
         new ImportColumnDefinition("OrgUnitCode",      IsRequired: false, ExampleValue: "IT"),

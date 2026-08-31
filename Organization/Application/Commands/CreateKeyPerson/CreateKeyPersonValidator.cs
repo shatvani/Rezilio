@@ -11,6 +11,10 @@ public sealed class CreateKeyPersonValidator : AbstractValidator<CreateKeyPerson
             .NotEmpty().WithMessage("A név kötelező.")
             .MaximumLength(200).WithMessage("A név maximum 200 karakter lehet.");
 
+        RuleFor(x => x.Code)
+            .NotEmpty().WithMessage("A kód kötelező.")
+            .MaximumLength(50).WithMessage("A kód maximum 50 karakter lehet.");
+
         RuleFor(x => x.Title)
             .MaximumLength(100).WithMessage("A beosztás maximum 100 karakter lehet.");
 

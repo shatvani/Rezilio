@@ -13,8 +13,19 @@ public sealed class UpdateKeyPersonHandler(OrganizationDbContext db, ITenantCont
             return Results.NotFound($"KeyPerson {id} nem található.");
         }
 
+        bool codeExists = await db.KeyPersons
+            .AnyAsync(k => k.TenantId == tenantContext.TenantId
+                        && k.Code == command.Code.Trim().ToUpperInvariant()
+                        && k.Id != id, ct);
+
+        if (codeExists)
+        {
+            return Results.Conflict($"Key person with code '{command.Code}' already exists.");
+        }
+
         keyPerson.Update(
             command.Name,
+            command.Code,
             command.Title,
             command.Department,
             command.OrgUnitId,
