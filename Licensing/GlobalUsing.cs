@@ -4,4 +4,5 @@ global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.EntityFrameworkCore;
 global using Rezilio.Modules.Licensing.Domain;
 global using Rezilio.Modules.Licensing.Infrastructure;
+global using Rezilio.SharedKernel.Multitenancy;
 global using Wolverine.Http;

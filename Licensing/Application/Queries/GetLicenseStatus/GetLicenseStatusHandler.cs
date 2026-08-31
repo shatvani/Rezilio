@@ -1,6 +1,6 @@
 namespace Rezilio.Modules.Licensing.Application.Queries.GetLicenseStatus;
 
-public sealed class GetLicenseStatusHandler(LicensingDbContext db)
+public sealed class GetLicenseStatusHandler(LicensingDbContext db, ITenantContext tenantContext)
 {
     [WolverineGet("/api/licensing/status/{tenantId}")]
     [Authorize]
@@ -8,7 +8,7 @@ public sealed class GetLicenseStatusHandler(LicensingDbContext db)
     {
         TenantLicense? license = await db.Licenses
             .AsNoTracking()
-            .FirstOrDefaultAsync(l => l.TenantId == tenantId, ct);
+            .FirstOrDefaultAsync(l => l.TenantId == tenantContext.TenantId, ct);
 
         if (license is null) { return null; }
 
