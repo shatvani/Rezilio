@@ -537,6 +537,14 @@ mostantól nem bízik meg benne.
 
 ---
 
+### FIX – KeyPerson.Code mező bevezetése (Owner-matching pontosítása)
+> **Branch:** `fix/org-keyperson-code-field`
+
+- [ ] KeyPerson entitáshoz Code mező (mint a többi entitásnál), egyedi (TenantId, Code) index
+- [ ] Owner-matching importnál Code alapján, nem Name alapján (audit során talált, dokumentált limitáció)
+
+---
+
 ## EPIC 1 – MVP (Core modulok)
 
 > **Cél:** Önmagában értékesíthető Basic csomag. Teljes kockázati életciklus.  

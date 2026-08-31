@@ -14,6 +14,7 @@ public sealed class GetKeyPersonsByTenantHandler(OrganizationDbContext db, ITena
             {
                 k.Id,
                 k.Name,
+                k.Code,
                 k.Title,
                 k.Department,
                 k.OrgUnitId,

@@ -3,6 +3,7 @@ namespace Rezilio.Modules.Organization.Application.Commands.CreateKeyPerson;
 public sealed record CreateKeyPersonCommand(
     Guid TenantId,
     string Name,
+    string Code,
     string? Title,
     string? Department,
     Guid? OrgUnitId,
