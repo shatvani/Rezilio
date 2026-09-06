@@ -10,7 +10,7 @@ public sealed class LicensingDbContextFactory : IDesignTimeDbContextFactory<Lice
     public LicensingDbContext CreateDbContext(string[] args)
     {
         var options = new DbContextOptionsBuilder<LicensingDbContext>()
-            .UseNpgsql("Host=localhost;Port=5432;Database=rezilio;Username=rezilio;Password=rezilio_dev")
+            .UseNpgsql("Host=localhost;Port=5432;Database=rezilio_dev;Username=rezilio;Password=rezilio_dev_password")
             .Options;
 
         return new LicensingDbContext(options);
