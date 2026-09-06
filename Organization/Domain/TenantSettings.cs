@@ -14,6 +14,14 @@ public sealed class TenantSettings : AggregateRoot<Guid>
     private readonly List<LanguageCode> _supportedLanguages = [];
     public IReadOnlyList<LanguageCode> SupportedLanguages => _supportedLanguages.AsReadOnly();
 
+    /// <summary>
+    /// Tenant-szintű alapértelmezett éves EBITDA (ld. docs/design/risk-register-design.md
+    /// §2.3) — manuálisan rögzítve az adminisztrátor által, nem számított. A RiskRegister
+    /// modul az EbitdaBaselineLookupQuery-n keresztül olvassa, ha nincs OrgUnit/
+    /// BusinessProcess-szintű felülírás.
+    /// </summary>
+    public Money? DefaultAnnualEbitda { get; private set; }
+
     // EF Core proxy ctor
     private TenantSettings() { }
 
@@ -61,5 +69,11 @@ public sealed class TenantSettings : AggregateRoot<Guid>
         {
             _supportedLanguages.Add(language);
         }
+    }
+
+    /// <summary>Null-lal is hívható — ez azt jelenti, hogy a tenant tudatosan nem ad meg EBITDA-alapértéket (ld. §2.3).</summary>
+    public void SetDefaultAnnualEbitda(Money? annualEbitda)
+    {
+        DefaultAnnualEbitda = annualEbitda;
     }
 }

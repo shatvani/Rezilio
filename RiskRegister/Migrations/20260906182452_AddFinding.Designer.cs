@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Rezilio.Modules.RiskRegister.Infrastructure;
@@ -11,9 +12,11 @@ using Rezilio.Modules.RiskRegister.Infrastructure;
 namespace RiskRegister.Migrations
 {
     [DbContext(typeof(RiskRegisterDbContext))]
-    partial class RiskRegisterDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260906182452_AddFinding")]
+    partial class AddFinding
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,103 +24,6 @@ namespace RiskRegister.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("Rezilio.Modules.RiskRegister.Domain.Assessment", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ApprovalStatus")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<DateTimeOffset?>("ApprovedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("ApprovedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("AssessedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("CorrelationId")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreatedBy")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<decimal?>("EbitdaImpactPercentage")
-                        .HasColumnType("numeric(9,2)");
-
-                    b.Property<Guid?>("ImpactContextBusinessProcessId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("ImpactContextOrgUnitId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("InherentImpact")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("InherentLikelihood")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("InherentScore")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTimeOffset?>("LastModified")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("LastModifiedBy")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("RejectionReason")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)");
-
-                    b.Property<int>("ResidualImpact")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("ResidualLikelihood")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("ResidualScore")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("RiskId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int?>("TargetImpact")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("TargetLikelihood")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("TargetScore")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RiskId");
-
-                    b.HasIndex("TenantId");
-
-                    b.HasIndex("TenantId", "ApprovalStatus");
-
-                    b.HasIndex("TenantId", "RiskId");
-
-                    b.ToTable("assessments", (string)null);
-                });
 
             modelBuilder.Entity("Rezilio.Modules.RiskRegister.Domain.Finding", b =>
                 {
@@ -257,63 +163,6 @@ namespace RiskRegister.Migrations
                     b.HasIndex("TenantId", "Status");
 
                     b.ToTable("risks", (string)null);
-                });
-
-            modelBuilder.Entity("Rezilio.Modules.RiskRegister.Domain.Assessment", b =>
-                {
-                    b.HasOne("Rezilio.Modules.RiskRegister.Domain.Risk", null)
-                        .WithMany()
-                        .HasForeignKey("RiskId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.OwnsOne("Rezilio.SharedKernel.DDD.VOs.Money", "EbitdaBaselineSnapshot", b1 =>
-                        {
-                            b1.Property<Guid>("AssessmentId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<decimal>("Amount")
-                                .HasColumnType("numeric")
-                                .HasColumnName("ebitda_baseline_snapshot_amount");
-
-                            b1.Property<string>("Currency")
-                                .IsRequired()
-                                .HasColumnType("text")
-                                .HasColumnName("ebitda_baseline_snapshot_currency");
-
-                            b1.HasKey("AssessmentId");
-
-                            b1.ToTable("assessments");
-
-                            b1.WithOwner()
-                                .HasForeignKey("AssessmentId");
-                        });
-
-                    b.OwnsOne("Rezilio.SharedKernel.DDD.VOs.Money", "EstimatedFinancialImpact", b1 =>
-                        {
-                            b1.Property<Guid>("AssessmentId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<decimal>("Amount")
-                                .HasColumnType("numeric")
-                                .HasColumnName("estimated_financial_impact_amount");
-
-                            b1.Property<string>("Currency")
-                                .IsRequired()
-                                .HasColumnType("text")
-                                .HasColumnName("estimated_financial_impact_currency");
-
-                            b1.HasKey("AssessmentId");
-
-                            b1.ToTable("assessments");
-
-                            b1.WithOwner()
-                                .HasForeignKey("AssessmentId");
-                        });
-
-                    b.Navigation("EbitdaBaselineSnapshot");
-
-                    b.Navigation("EstimatedFinancialImpact");
                 });
 
             modelBuilder.Entity("Rezilio.Modules.RiskRegister.Domain.Finding", b =>

@@ -104,9 +104,13 @@ coverage-report/
 *.runtimeconfig.json
 !**/Properties/launchSettings.json
 
-# Entity Framework Core Migrations (compiled)
-# Keep .cs migration files, ignore compiled artifacts
-**/Migrations/*Designer.cs
+# MEGJEGYZÉS (2026-09-06, feltárva az Assessment-fázison): korábban itt egy
+# "**/Migrations/*Designer.cs" szabály állt "compiled artifacts" címen — ez téves volt:
+# a Designer.cs NEM fordított/generált build-artifact, hanem az EF Core tooling
+# forrásfájlja (BuildTargetModel() — az adott migráció pillanatában érvényes
+# modell-állapot), amit a scaffolding és az idempotens deploy-szkript generálás használ.
+# A szabály a projekt kezdete óta minden migráció Designer.cs-ét kihagyta a repóból
+# (16 fájl volt csak lemezen, egy sem git-tracked) — most pótolva, ld. külön commit.
 
 # Secrets — NEVER commit
 appsettings.Production.json

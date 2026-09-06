@@ -821,13 +821,22 @@ egy `Assessment` válaszol.
   Egy `Risk`-hez egyidejűleg csak egy `Draft`/`Submitted` (azaz nem-végleges) `Assessment`
   lehet folyamatban — új értékelést csak azután lehet indítani, hogy az előző véglegesült
   (`Approved` vagy `Rejected`).
+  **Pontosítás (2026-09-06, az Assessment-implementáció 4. lépcsőjén felmerült
+  ellentmondás alapján):** az eredeti §3.3 Command-lista `UpdateAssessment`-et
+  "Draft-only"-ként írta le, ami nem adott triggert a fent deklarált `Rejected → Draft`
+  átmenethez. Explicit döntés: **külön `ReopenAssessment(AssessmentId)` command** végzi a
+  `Rejected → Draft` váltást (`RiskOwner` jogosultsággal, saját `AssessmentReopened`
+  domain eseménnyel — auditálhatóan elkülönítve a puszta szerkesztéstől), és az
+  `UpdateAssessment` valóban szigorúan csak `Draft` állapotból hívható marad (ld. §3.3
+  frissített Command-lista).
 - `ApproveAssessment`/`RejectAssessment` csak `RiskManager` vagy `Admin` szerepkörrel
   hívható, és kitölti az `ApprovedBy`/`ApprovedAt`, illetve elutasítás esetén a
   `RejectionReason` mezőt (authorization, nem szigorúan aggregátum-invariáns, de itt
   rögzítjük).
 
 **Domain eventek:** `AssessmentCreated`, `AssessmentSubmitted`, `AssessmentApproved`,
-`AssessmentRejected`. Az `AssessmentApproved` váltja ki a modulhatáron átnyúló
+`AssessmentRejected`, `AssessmentReopened` (a `ReopenAssessment` Command-hoz, ld. fenti
+2026-09-06-i pontosítás). Az `AssessmentApproved` váltja ki a modulhatáron átnyúló
 `RiskScoreChanged` eseményt (Monitoring, Reporting felé) — tehát nem minden belső event
 jut ki a modulból, csak a jóváhagyott, végleges állapotváltás.
 
@@ -1360,6 +1369,11 @@ EbitdaBaselineLookupResult { AnnualEbitda: Money? }`.
   a `RejectionReason`-t. A `Risk.Status` a modulon belüli handler szerint esik vissza:
   `Draft`-ba, ha ez volt az adott `Risk` *első* `Assessment`-je, egyébként `Active`-ba (a
   korábbi jóváhagyott értékelés marad érvényben). Jogosultság: `RiskManager`/`Admin`.
+- **`ReopenAssessment(AssessmentId)`** → `Rejected → Draft` (**új, 2026-09-06**, ld. fenti
+  pontosítás a §2.2-ben) — külön, dedikált Command az átdolgozás megkezdésére, saját
+  `AssessmentReopened` eseménnyel; explicit, auditálható lépés, elkülönítve az
+  `UpdateAssessment` puszta szerkesztésétől (ami szigorúan csak `Draft`-ból hívható).
+  Jogosultság: `RiskOwner`.
 
 **Query-k:**
 
