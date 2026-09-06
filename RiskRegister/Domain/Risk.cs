@@ -165,6 +165,64 @@ public sealed class Risk : AuditableAggregateRoot<Guid>
         RaiseDomainEvent(new RiskArchived(Id, TenantId));
     }
 
+    /// <summary>
+    /// Draft/Active/Treated → UnderReview (ld. §2.2 állapottáblázat, 2026-09-06-i
+    /// kiegészítés). A SubmitAssessment (jelen fázis) és a jövőbeli SubmitTreatmentPlan
+    /// (TreatmentPlan-fázis) egyaránt ezt hívja modulon belüli event-handleren keresztül,
+    /// SOHA nem közvetlenül a Command handlerből (ld. §2.5 esemény-dispatch minta).
+    /// </summary>
+    public void BeginReview()
+    {
+        if (Status is not (RiskStatus.Draft or RiskStatus.Active or RiskStatus.Treated))
+        {
+            throw new InvalidOperationException(
+                "A Risk csak Draft, Active vagy Treated állapotból léphet UnderReview-ba.");
+        }
+
+        var oldStatus = Status;
+        Status = RiskStatus.UnderReview;
+        RaiseDomainEvent(new RiskStatusChanged(Id, TenantId, oldStatus, Status));
+    }
+
+    /// <summary>
+    /// UnderReview → Active. Az AssessmentApprovedHandler hívja — az ApproveAssessment
+    /// MINDIG Active-ba viszi a Risk-et, függetlenül a kockázat-étvágy kimenetelétől
+    /// (ld. §3.3 üzleti szabály #1; az Active a nyugalmi állapot, függetlenül attól, hogy
+    /// van-e éppen aktív TreatmentPlan — a Treated csak a TreatmentPlan-fázisban, egy
+    /// külön ApproveTreatmentPlan hívás nyomán következik be).
+    /// </summary>
+    public void ActivateAfterApproval()
+    {
+        if (Status != RiskStatus.UnderReview)
+        {
+            throw new InvalidOperationException("Csak UnderReview állapotú Risk aktiválható jóváhagyás után.");
+        }
+
+        var oldStatus = Status;
+        Status = RiskStatus.Active;
+        RaiseDomainEvent(new RiskStatusChanged(Id, TenantId, oldStatus, Status));
+    }
+
+    /// <summary>
+    /// UnderReview → Draft VAGY UnderReview → Active, az Assessment elutasítása után
+    /// (ld. §2.2 állapottáblázat "UnderReview" sor). Az AssessmentRejectedHandler dönti el
+    /// és adja át a <paramref name="hasPriorApprovedAssessment"/> értéket: ha ez volt az
+    /// adott Risk ELSŐ Assessment-je (még sosem volt jóváhagyott), akkor Draft-ba esik
+    /// vissza (rework az elejéről); ha volt már korábbi jóváhagyott Assessment, akkor a
+    /// korábbi értékelés marad érvényben, és a Risk Active-ba esik vissza.
+    /// </summary>
+    public void RevertAfterRejection(bool hasPriorApprovedAssessment)
+    {
+        if (Status != RiskStatus.UnderReview)
+        {
+            throw new InvalidOperationException("Csak UnderReview állapotú Risk eshet vissza elutasítás után.");
+        }
+
+        var oldStatus = Status;
+        Status = hasPriorApprovedAssessment ? RiskStatus.Active : RiskStatus.Draft;
+        RaiseDomainEvent(new RiskStatusChanged(Id, TenantId, oldStatus, Status));
+    }
+
     private void EnsureNotTerminal(string actionDescription)
     {
         if (Status is RiskStatus.Closed or RiskStatus.Archived)

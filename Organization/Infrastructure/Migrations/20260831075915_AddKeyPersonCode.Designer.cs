@@ -2,18 +2,21 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Rezilio.Modules.Organization.Infrastructure;
 
 #nullable disable
 
-namespace Rezilio.Modules.Organization.Infrastructure.Migrations
+namespace Organization.Infrastructure.Migrations
 {
     [DbContext(typeof(OrganizationDbContext))]
-    partial class OrganizationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260831075915_AddKeyPersonCode")]
+    partial class AddKeyPersonCode
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -253,9 +256,6 @@ namespace Rezilio.Modules.Organization.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -275,10 +275,6 @@ namespace Rezilio.Modules.Organization.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<string>("UserId")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("TenantId");
@@ -287,10 +283,6 @@ namespace Rezilio.Modules.Organization.Infrastructure.Migrations
                         .IsUnique();
 
                     b.HasIndex("TenantId", "OrgUnitId");
-
-                    b.HasIndex("TenantId", "UserId")
-                        .IsUnique()
-                        .HasFilter("\"UserId\" IS NOT NULL");
 
                     b.ToTable("KeyPersons");
                 });
@@ -410,33 +402,6 @@ namespace Rezilio.Modules.Organization.Infrastructure.Migrations
                     b.ToTable("tenant_settings", (string)null);
                 });
 
-            modelBuilder.Entity("Rezilio.Modules.Organization.Domain.BusinessProcess", b =>
-                {
-                    b.OwnsOne("Rezilio.SharedKernel.DDD.VOs.Money", "AnnualEbitda", b1 =>
-                        {
-                            b1.Property<Guid>("BusinessProcessId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<decimal>("Amount")
-                                .HasColumnType("numeric")
-                                .HasColumnName("annual_ebitda_amount");
-
-                            b1.Property<string>("Currency")
-                                .IsRequired()
-                                .HasColumnType("text")
-                                .HasColumnName("annual_ebitda_currency");
-
-                            b1.HasKey("BusinessProcessId");
-
-                            b1.ToTable("BusinessProcesses");
-
-                            b1.WithOwner()
-                                .HasForeignKey("BusinessProcessId");
-                        });
-
-                    b.Navigation("AnnualEbitda");
-                });
-
             modelBuilder.Entity("Rezilio.Modules.Organization.Domain.ImportJob", b =>
                 {
                     b.OwnsMany("Rezilio.Modules.Organization.Domain.ImportRowResult", "Results", b1 =>
@@ -469,57 +434,8 @@ namespace Rezilio.Modules.Organization.Infrastructure.Migrations
                     b.Navigation("Results");
                 });
 
-            modelBuilder.Entity("Rezilio.Modules.Organization.Domain.OrganizationalUnit", b =>
-                {
-                    b.OwnsOne("Rezilio.SharedKernel.DDD.VOs.Money", "AnnualEbitda", b1 =>
-                        {
-                            b1.Property<Guid>("OrganizationalUnitId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<decimal>("Amount")
-                                .HasColumnType("numeric")
-                                .HasColumnName("annual_ebitda_amount");
-
-                            b1.Property<string>("Currency")
-                                .IsRequired()
-                                .HasColumnType("text")
-                                .HasColumnName("annual_ebitda_currency");
-
-                            b1.HasKey("OrganizationalUnitId");
-
-                            b1.ToTable("organizational_units");
-
-                            b1.WithOwner()
-                                .HasForeignKey("OrganizationalUnitId");
-                        });
-
-                    b.Navigation("AnnualEbitda");
-                });
-
             modelBuilder.Entity("Rezilio.Modules.Organization.Domain.TenantSettings", b =>
                 {
-                    b.OwnsOne("Rezilio.SharedKernel.DDD.VOs.Money", "DefaultAnnualEbitda", b1 =>
-                        {
-                            b1.Property<Guid>("TenantSettingsId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<decimal>("Amount")
-                                .HasColumnType("numeric")
-                                .HasColumnName("default_annual_ebitda_amount");
-
-                            b1.Property<string>("Currency")
-                                .IsRequired()
-                                .HasColumnType("text")
-                                .HasColumnName("default_annual_ebitda_currency");
-
-                            b1.HasKey("TenantSettingsId");
-
-                            b1.ToTable("tenant_settings");
-
-                            b1.WithOwner()
-                                .HasForeignKey("TenantSettingsId");
-                        });
-
                     b.OwnsMany("Rezilio.SharedKernel.DDD.VOs.LanguageCode", "SupportedLanguages", b1 =>
                         {
                             b1.Property<Guid>("TenantSettingsId");
@@ -541,8 +457,6 @@ namespace Rezilio.Modules.Organization.Infrastructure.Migrations
                             b1.WithOwner()
                                 .HasForeignKey("TenantSettingsId");
                         });
-
-                    b.Navigation("DefaultAnnualEbitda");
 
                     b.Navigation("SupportedLanguages");
                 });

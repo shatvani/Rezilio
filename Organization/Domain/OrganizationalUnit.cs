@@ -1,4 +1,5 @@
 using Rezilio.SharedKernel.DDD;
+using Rezilio.SharedKernel.DDD.VOs;
 
 namespace Rezilio.Modules.Organization.Domain;
 
@@ -9,6 +10,14 @@ public sealed class OrganizationalUnit : AggregateRoot<Guid>
     public string Code { get; private set; } = default!;
     public Guid? ParentId { get; private set; }
     public string? Description { get; private set; }
+
+    /// <summary>
+    /// Szervezeti egység szintű éves EBITDA felülírás (ld. docs/design/risk-register-design.md
+    /// §2.3) — ha be van állítva, ez élvez elsőbbséget a tenant-szintű
+    /// TenantSettings.DefaultAnnualEbitda felett az EbitdaBaselineLookupQuery
+    /// prioritás-logikájában. Null-lal is hívható (nincs felülírás megadva).
+    /// </summary>
+    public Money? AnnualEbitda { get; private set; }
 
     // EF Core proxy ctor
     private OrganizationalUnit() { }
@@ -47,5 +56,11 @@ public sealed class OrganizationalUnit : AggregateRoot<Guid>
         Code = code.Trim().ToUpperInvariant();
         ParentId = parentId;
         Description = description?.Trim();
+    }
+
+    /// <summary>Null-lal is hívható — ez azt jelenti, hogy ezen a szervezeti egységen nincs EBITDA-felülírás (ld. §2.3).</summary>
+    public void SetAnnualEbitda(Money? annualEbitda)
+    {
+        AnnualEbitda = annualEbitda;
     }
 }

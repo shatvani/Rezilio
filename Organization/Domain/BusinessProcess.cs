@@ -1,5 +1,6 @@
 using Rezilio.Modules.Organization.Domain.Events;
 using Rezilio.SharedKernel.DDD;
+using Rezilio.SharedKernel.DDD.VOs;
 using Rezilio.SharedKernel.Results;
 
 namespace Rezilio.Modules.Organization.Domain;
@@ -16,6 +17,13 @@ public sealed class BusinessProcess : AggregateRoot<Guid>
     public int? MaxTolerableDowntimeMinutes { get; private set; }
     public int? RecoveryTimeObjectiveMinutes { get; private set; }
     public List<Guid> DependsOnSystemIds { get; private set; } = [];
+
+    /// <summary>
+    /// Üzleti folyamat szintű éves EBITDA felülírás (ld. docs/design/risk-register-design.md
+    /// §2.3) — az OrganizationalUnit-szintű és tenant-szintű alapértékek elé sorolva az
+    /// EbitdaBaselineLookupQuery prioritás-logikájában. Null-lal is hívható (nincs felülírás megadva).
+    /// </summary>
+    public Money? AnnualEbitda { get; private set; }
 
     private BusinessProcess() { }
 
@@ -84,5 +92,11 @@ public sealed class BusinessProcess : AggregateRoot<Guid>
         RecoveryTimeObjectiveMinutes = recoveryTimeObjectiveMinutes;
         DependsOnSystemIds = dependsOnSystemIds ?? [];
         return Result.Success();
+    }
+
+    /// <summary>Null-lal is hívható — ez azt jelenti, hogy ezen az üzleti folyamaton nincs EBITDA-felülírás (ld. §2.3).</summary>
+    public void SetAnnualEbitda(Money? annualEbitda)
+    {
+        AnnualEbitda = annualEbitda;
     }
 }

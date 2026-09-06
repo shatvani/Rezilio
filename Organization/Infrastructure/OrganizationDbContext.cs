@@ -34,6 +34,16 @@ public sealed class OrganizationDbContext : DbContext
                 owned.ToJson("supported_languages");
                 owned.Property(l => l.Value).IsRequired();
             });
+
+            // Opcionális (nullable) owned VO — ld. docs/design/risk-register-design.md §2.3.
+            // Ha a tenant nem állított be alapértelmezett EBITDA-t, mindkét oszlop NULL marad.
+            entity.OwnsOne(e => e.DefaultAnnualEbitda, money =>
+            {
+                money.Property(m => m.Amount).HasColumnName("default_annual_ebitda_amount");
+                money.Property(m => m.Currency)
+                     .HasConversion(v => v.Value, v => new(v))
+                     .HasColumnName("default_annual_ebitda_currency");
+            });
         });
 
         modelBuilder.Entity<ImportJob>(entity =>
@@ -83,6 +93,15 @@ public sealed class OrganizationDbContext : DbContext
 
             entity.HasIndex(e => new { e.TenantId, e.Code }).IsUnique();
             entity.HasIndex(e => e.TenantId);
+
+            // Opcionális (nullable) owned VO — ld. docs/design/risk-register-design.md §2.3.
+            entity.OwnsOne(e => e.AnnualEbitda, money =>
+            {
+                money.Property(m => m.Amount).HasColumnName("annual_ebitda_amount");
+                money.Property(m => m.Currency)
+                     .HasConversion(v => v.Value, v => new(v))
+                     .HasColumnName("annual_ebitda_currency");
+            });
         });
 
         modelBuilder.Entity<Customer>(entity =>
@@ -163,6 +182,15 @@ public sealed class OrganizationDbContext : DbContext
             e.Property(x => x.CriticalityLevel).HasConversion<string>().HasMaxLength(20);
             e.Property(x => x.DependsOnSystemIds).HasColumnType("jsonb");
             e.HasIndex(x => new { x.TenantId, x.Code }).IsUnique();
+
+            // Opcionális (nullable) owned VO — ld. docs/design/risk-register-design.md §2.3.
+            e.OwnsOne(x => x.AnnualEbitda, money =>
+            {
+                money.Property(m => m.Amount).HasColumnName("annual_ebitda_amount");
+                money.Property(m => m.Currency)
+                     .HasConversion(v => v.Value, v => new(v))
+                     .HasColumnName("annual_ebitda_currency");
+            });
         });
     }
 }
