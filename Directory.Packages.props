@@ -2,6 +2,7 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="FluentValidation" Version="12.1.1" />
@@ -28,5 +29,8 @@
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <PackageVersion Include="Testcontainers.PostgreSql" Version="4.2.0" />
+    <!-- Tranzitív függőség a Testcontainers.PostgreSql-en keresztül — verzió felülpinnelve
+         a GHSA-q939-rpr3-3284 (CVE-2026-48798) magas súlyosságú sebezhetőség miatt. -->
+    <PackageVersion Include="SSH.NET" Version="2026.0.0" />
   </ItemGroup>
 </Project>

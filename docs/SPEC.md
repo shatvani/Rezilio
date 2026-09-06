@@ -1,6 +1,8 @@
-# Risk Analyzer – Rendszerspecifikáció (SPEC.md)
+# REZILIO – Rendszerspecifikáció (SPEC.md)
 
-> **Utolsó frissítés:** 2026-08-19 (v3 – Hetzner infra, Keycloak, Grafana stack, PostgreSQL fix)  
+> **Utolsó frissítés:** 2026-09-03 (v4 – modul-struktúra pontosítás: RiskRegister/Assessment/Treatment
+> egyesítve egy fizikai modulba, elavult "Identity"/"AdvancedReporting"/"ESG" hivatkozások javítva –
+> lásd `docs/design/risk-register-design.md`)  
 > **Státusz:** Tervezési fázis – folyamatosan bővül
 
 ---
@@ -158,11 +160,23 @@ public class TenantSettings : AggregateRoot<TenantId>
 
 | Kategória | Modulok | Elérhetőség |
 |---|---|---|
-| **Alap (mindig aktív)** | Identity, Licensing, Organization | Minden tervben |
-| **Core (Basic csomag)** | RiskRegister, Assessment, Treatment | Basic+ |
+| **Alap (mindig aktív, nem licencköteles)** | Licensing, Organization | Minden tervben |
+| **Core (Basic csomag)** | RiskRegister *(3 aggregátum: `Risk`, `Assessment`, `TreatmentPlan` – lásd 4.1)* | Basic+ |
 | **Prémium I.** | Monitoring, Incidents | Professional+ |
-| **Prémium II.** | Compliance, AdvancedReporting | Enterprise |
-| **Enterprise** | ESG, AIInsights | Enterprise |
+| **Prémium II.** | Compliance, Reporting | Enterprise |
+| **Enterprise** | AIInsights | Enterprise |
+
+> ⚠️ **Javítva (2026-09-03):** a korábbi táblázat "Identity" nevű modult tartalmazott – ilyen
+> `ModuleType` nem létezik. A Keycloak-alapú authentikáció infrastruktúra szintű (ADR-012), nem
+> licencelt/aktiválható modul, ezért kikerült innen. Az "AdvancedReporting" a tényleges enum-érték
+> nevére (`Reporting`) lett javítva. Az "ESG" szintén nem `ModuleType` enum-érték – ESG jelenleg egy
+> lehetséges `RiskDomain` (üzleti kategorizálás, lásd 4.2 és `risk-register-design.md` §1.16), nem
+> önálló licencelt modul; ha a jövőben önálló ESG-modul épül, itt vissza kell venni. A teljes,
+> aktuális `ModuleType` enum: `RiskRegister, Assessment, Treatment, Monitoring, Incidents,
+> Compliance, Reporting, AIInsights` — figyelem: az enum máig három külön értéket tart fenn
+> (`RiskRegister`, `Assessment`, `Treatment`) licencelési célra, annak ellenére, hogy fizikailag egy
+> modulban élnek (lásd 4.1 megjegyzés) – ez szándékos, az attribútum-alapú `[RequiresModule]`
+> ellenőrzés a fizikai modulhatároktól függetlenül működik.
 
 ### 3.2 Modul deployment stratégia
 - **Minden modul benne van egyetlen Docker image-ben**
@@ -188,9 +202,9 @@ public class TenantSettings : AggregateRoot<TenantId>
 **Enterprise**
 - Minden Professional modul
 - Compliance (ISO, GDPR, NIS2...)
-- ESG modul
-- AI-alapú kockázatelemzés
-- Korlátlan RiskDomain
+- AI-alapú kockázatelemzés (AIInsights)
+- Korlátlan RiskDomain (ESG-kockázatok is felvehetők, mint bármely más `RiskDomain` – nem külön
+  licencelt modul, lásd 3.1 megjegyzés)
 - API hozzáférés integrációkhoz
 
 ---
@@ -261,6 +275,56 @@ public enum EntityType
 }
 ```
 
+## 3.5 Compliance modul – keretrendszer katalógus (ADR-016)
+
+> Tervezett architektúra — a `story/3.11-compliance-api` implementálja.
+> Lásd részletesen: `docs/ADR-016-compliance-framework-catalog.md`.
+
+A platform egy vagy több megfelelőségi keretrendszert (NIS2, DORA, ISO
+27001, egyedi taxonómiák) tud kiszolgálni, **lazán csatolva** a
+RiskRegister motorhoz — egy `Risk` szabadon állhat (0..N kapcsolat), vagy
+egyszerre több keretrendszer több követelményéhez is köthető.
+
+### Verziózott katalógus-hierarchia
+
+```
+ComplianceFramework  (pl. "NIS2", "DORA")
+      └── FrameworkVersion  (pl. "2024. évi LXIX. törvény", EffectiveFrom, EffectiveTo?)
+              └── FrameworkControl  (a keretrendszer konkrét követelménypontjai)
+```
+
+A `FrameworkVersion` és a hozzá tartozó `FrameworkControl`-ok append-only
+jellegűek: jogszabályváltozáskor új verzió jön létre, a régi lezárásra
+kerül, de megmarad. Egy `Risk ↔ FrameworkControl` hozzárendelés
+(`RiskFrameworkMapping` join tábla) mindig egy konkrét, verzióhoz kötött
+`FrameworkControl`-ra mutat — így auditkor pontosan visszanézhető, mi volt
+a hozzárendelés idején hatályos szöveg, a katalógus későbbi bővülésétől
+függetlenül.
+
+### Licensing-szintű aktiválás
+
+A `TenantLicense` aggregate a meglévő `ModuleAccesses` mintáját megismétli
+egy második dimenzióként (`FrameworkAccesses`), hogy az egyes
+keretrendszerek egymástól függetlenül, önálló licenszelt tételként legyenek
+be-/kikapcsolhatók (`ComplianceFrameworkType` enum, `ActivateFramework` /
+`DeactivateFramework` / `StartFrameworkTrial` metódusok).
+
+### Első konkrét framework-tartalom: NIS2
+
+Az első feltöltendő `FrameworkVersion` a NIS2 irányelv magyarországi
+átültetése: **2024. évi LXIX. törvény Magyarország kiberbiztonságáról**
+(hatályos 2025.01.01-től, felügyeleti hatóság: SZTFH). A törvény 10
+minimumkövetelmény-kategóriája (21. cikk szerinti kockázatkezelési
+intézkedések: kockázatelemzés, incidenskezelés, üzletmenet-folytonosság,
+ellátási lánc biztonsága, biztonság a fejlesztésben, hatékonyság-mérés,
+kiberhigiénia és képzés, kriptográfia, HR-biztonság és hozzáférés-kezelés,
+MFA és biztonságos kommunikáció) adja az első `FrameworkVersion` alá
+tartozó `FrameworkControl` rekordokat.
+
+> ⚠️ Ez tájékoztató jellegű, nem jogi tanácsadás — a tényleges jogi
+> megfelelőségi kötelezettségek konkrét, ügyfél-specifikus értékelését
+> szakértővel/jogásszal kell elvégezni.
+
 ---
 
 ## 4. Domain modell áttekintés
@@ -278,34 +342,65 @@ public enum EntityType
 | `BusinessProcess` | Organization | Üzleti folyamat |
 | `ImportJob` | Organization | Import művelet nyilvántartása |
 | `Risk` | RiskRegister | Kockázat életciklusa |
-| `Assessment` | Assessment | Értékelési rekord |
-| `TreatmentPlan` | Treatment | Kezelési terv + kontrollok |
+| `Assessment` | RiskRegister | Értékelési rekord |
+| `TreatmentPlan` | RiskRegister | Kezelési terv + kontrollok |
 | `KRI` | Monitoring | Kockázati indikátor |
 | `Incident` | Incidents | Bekövetkezett kockázati esemény |
-| `ComplianceFramework` | Compliance | Szabványi keretrendszer |
+| `ComplianceFramework` | Compliance | Megfelelőségi keretrendszer (pl. NIS2, DORA) — ADR-016 |
+| `FrameworkVersion` | Compliance | Egy keretrendszer adott, időben hatályos, append-only verziója — ADR-016 |
+| `FrameworkControl` | Compliance | Egy verzióhoz tartozó konkrét követelménypont — ADR-016 |
 | `TenantLicense` | Licensing | Tenant előfizetés és modul-hozzáférés |
+
+> ⚠️ **Javítva (2026-09-03):** `Risk`, `Assessment` és `TreatmentPlan` korábban három külön
+> ("RiskRegister", "Assessment", "Treatment") modulhoz voltak rendelve. A `docs/design/risk-register-design.md`
+> tervezés során (2. lépcső előkészítése) tisztáztuk, hogy a licencelési granularitás
+> (`[RequiresModule]` attribútum, `ModuleType` enum) **nem követeli meg** a fizikai modul-szétválasztást
+> – az attribútum reflexióval, tetszőleges namespace-ből olvasható. A három aggregátum szorosan
+> összetartozik (Assessment.RiskId → Risk.Id, TreatmentPlan → Assessment eredménye alapján jön létre),
+> ezért **egy fizikai `RiskRegister` modulban**, három külön aggregátum gyökérként élnek, közös
+> `DbContext`-tel. A licencelés (Basic csomagban mindhárom aktív) továbbra is a `ModuleType.RiskRegister
+> / Assessment / Treatment` három külön enum-értékén keresztül granuláris marad – ez csak a fizikai
+> kód-elrendezést érinti, a licencelést nem. A `Compliance` modul ezzel szemben **valódi, önálló fizikai
+> modul marad**: a keretrendszer-katalógus (ComplianceFramework/FrameworkVersion/FrameworkControl,
+> lásd 3.5) tartalma tenant-független, jogszabály-vezérelt élettartamú, és csak egy laza,
+> `RiskFrameworkMapping` join táblán keresztül kapcsolódik a `Risk.Id`-hoz – ez a kapcsolat a
+> modul-egyesítés után is változatlanul működik.
 
 ### 4.2 Kulcs value object-ek
 
 - `TenantId` – minden entitáson kötelező
 - `RiskScore` – likelihood × impact
 - `Likelihood`, `Impact` – 1-5 skála
-- `RiskCategory` – IT / Financial / ESG / Operational / Compliance
-- `ModuleType` – enum az összes modulhoz
+- `RiskDomain` – üzleti kategorizálás (pl. IT / Financial / Operational / Strategic / Reputational /
+  ThirdParty / ESG). **Javítva (2026-09-03):** a korábbi `RiskCategory` felsorolás (`IT / Financial /
+  ESG / Operational / Compliance`) elavult és félrevezető volt – a "Compliance" érték névütközésben
+  állt a `Compliance` modul nevével. A pontos, végleges felsorolást a `docs/design/risk-register-design.md`
+  §1.2/§1.16 tartalmazza; a névütközés elkerülésére ott felmerült a "Compliance" `RiskDomain`-érték
+  átnevezése (pl. `RegulatoryExposure`-ra) – ez a 2. lépcső (koncepcionális modell) lezárásakor dől el
+  véglegesen.
+- `ModuleType` – enum az összes modulhoz (`RiskRegister, Assessment, Treatment, Monitoring, Incidents,
+  Compliance, Reporting, AIInsights`)
 - `Money` – `Amount (decimal)` + `CurrencyCode (ISO 4217)`
 - `CurrencyCode` – ISO 4217 kód: `HUF`, `EUR`, `USD` stb.
 - `LanguageCode` – BCP 47: `hu`, `en`, `de` stb.
 
 ### 4.3 Kulcs domain event-ek
 
-| Event | Küldő | Fogadó(k) |
+> ⚠️ **Javítva (2026-09-03):** az alábbi táblázat korábban azt sugallta, hogy `Risk` → `Assessment` →
+> `TreatmentPlan` között a helyes működéshez (referenciális integritás) event-küldés szükséges. Mivel
+> ez a három aggregátum most egy fizikai modulban, egy `DbContext`-en él, az egymás közötti hivatkozás
+> (pl. `Assessment.RiskId`) egyszerű, szinkron lekérdezéssel ellenőrizhető – nincs szükség event-re a
+> belső konzisztenciához. Az alábbi event-ek továbbra is érvényesek és szükségesek, de kizárólag a
+> **valóban külső, más fizikai modulban élő fogyasztók** (Monitoring, Incidents, Reporting) felé.
+
+| Event | Küldő (RiskRegister modulon belül) | Fogadó(k) – külső modulok |
 |---|---|---|
-| `RiskCreated` | RiskRegister | Assessment, Monitoring, Reporting |
-| `RiskScoreChanged` | Assessment | Monitoring, Reporting |
-| `AssessmentCompleted` | Assessment | Treatment, Reporting |
-| `ControlStatusChanged` | Treatment | Monitoring, Reporting |
+| `RiskCreated` | Risk aggregátum | Monitoring, Reporting |
+| `RiskScoreChanged` | Assessment aggregátum | Monitoring, Reporting |
+| `AssessmentCompleted` | Assessment aggregátum | Reporting *(TreatmentPlan létrehozása immár belső, szinkron folyamat, nem event-vezérelt)* |
+| `ControlStatusChanged` | TreatmentPlan aggregátum | Monitoring, Reporting |
 | `KRIThresholdBreached` | Monitoring | Incidents, Reporting |
-| `IncidentReported` | Incidents | RiskRegister, Reporting |
+| `IncidentReported` | Incidents | RiskRegister (Risk re-értékelés triggere), Reporting |
 | `ModuleActivated` | Licensing | érintett modulok |
 | `TrialExpired` | Licensing | érintett modulok |
 
@@ -332,7 +427,7 @@ A platform az alábbi kockázati területeket képes kiszolgálni (iparági sabl
 | **Phase 0** | Infra, Keycloak, Licensing alap | 4 hét |
 | **Phase 1 (MVP)** | RiskRegister, Assessment, Treatment | 8 hét |
 | **Phase 2** | Monitoring, Incidents | 8 hét |
-| **Phase 3** | Compliance, AdvancedReporting, ESG alap | 8 hét |
+| **Phase 3** | Compliance, Reporting | 8 hét |
 | **Phase 4** | AIInsights, B2B Multitenancy, Hardening | 6 hét |
 
 ---

@@ -27,7 +27,8 @@ public sealed class GetKeyPersonByIdHandler(OrganizationDbContext db, ITenantCon
             keyPerson.Email,
             keyPerson.Phone,
             keyPerson.BackupPersonName,
-            keyPerson.Description
+            keyPerson.Description,
+            keyPerson.IsActive
         });
     }
 }
