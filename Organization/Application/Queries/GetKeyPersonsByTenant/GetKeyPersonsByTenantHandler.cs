@@ -21,7 +21,8 @@ public sealed class GetKeyPersonsByTenantHandler(OrganizationDbContext db, ITena
                 k.Email,
                 k.Phone,
                 k.BackupPersonName,
-                k.Description
+                k.Description,
+                k.IsActive
             })
             .ToListAsync(ct);
 

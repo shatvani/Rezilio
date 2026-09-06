@@ -127,9 +127,16 @@ public sealed class OrganizationDbContext : DbContext
             entity.Property(e => e.Phone).HasMaxLength(50);
             entity.Property(e => e.BackupPersonName).HasMaxLength(200);
             entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.IsActive).IsRequired();
+            entity.Property(e => e.UserId).HasMaxLength(100);
             entity.HasIndex(e => e.TenantId);
             entity.HasIndex(e => new { e.TenantId, e.OrgUnitId });
             entity.HasIndex(e => new { e.TenantId, e.Code }).IsUnique();
+            // Egy Keycloak-user egy tenant-en belül csak egy KeyPerson-hoz köthető.
+            // Filtered unique index: NULL UserId-k (nincs kötve) nem ütköznek egymással.
+            entity.HasIndex(e => new { e.TenantId, e.UserId })
+                  .IsUnique()
+                  .HasFilter("\"UserId\" IS NOT NULL");
         });
 
         modelBuilder.Entity<ItSystem>(e =>

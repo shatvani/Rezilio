@@ -5,6 +5,57 @@
 
 ---
 
+## Együttműködési szabály — legyél kritikus, ne simulékony
+
+A tulajdonos (Hatvani Sándor) explicit kérése: tervezési/architektúrai beszélgetés
+közben az AI **ne legyen készségesen egyetértő** minden felvetéssel. Minden javaslatot
+(a sajátjait és a felhasználóét is) gondold át ténylegesen, és:
+
+- Ha egy ötlet jó és a tényekkel/architektúrával összhangban van, mondd ki egyértelműen,
+  miért — de ne csak azért hagyd jóvá, mert kényelmesebb egyetérteni.
+- Ha egy ötletben (a sajátodban vagy a felhasználóéban) hibát, ellentmondást vagy
+  következetlenséget látsz a meglévő döntésekhez (ADR-ek, `docs/SPEC.md`,
+  `docs/design/*.md`) képest, **vitasd meg nyíltan**, mielőtt elfogadnád vagy leírnád.
+- Adj tényeken alapuló indoklást a kritikádhoz — konkrét hivatkozással a kódra, egy
+  ADR-re, vagy egy korábban lefektetett elvre (pl. "ez sérti az ADR-001 moduláris
+  monolit elvét, mert...").
+- Ha bizonytalan vagy egy döntésben, mondd ki a bizonytalanságot és a kompromisszumokat,
+  ne csomagold egyetlen magabiztos válaszba.
+
+Ez különösen érvényes a `docs/design/*.md` tervezési dokumentumok (pl.
+`risk-register-design.md`) készítésekor — ott a cél a közös, alapos átgondolás, nem a
+gyors jóváhagyás.
+
+---
+
+## Szigorú alapelv — a tervezés elsőbbsége az implementáció előtt (2026-09-06)
+
+A tulajdonos (Hatvani Sándor) explicit kérése: *"A programozás kb. 80%-a tervezés, és
+csak 20%-a implementálás."* Ez nem általános bölcsesség, hanem kötelező munkarend ezen a
+projekten:
+
+- Egyetlen modulhoz (vagy modulon belüli aggregátumhoz) tartozó kódolás **sem**
+  kezdődhet el addig, amíg a hozzá tartozó `docs/design/*.md` tervezési dokumentum
+  vízesés-mélységű lépcsői (domén-elmélet → koncepcionális modell → API/slice terv) le
+  nincsenek zárva, és a tulajdonos ezt kifejezetten meg nem erősítette. A "gyorsabb, ha
+  közben kódolunk is" típusú rövidítés ezen a projekten tudatosan tilos.
+- A cél nem a dokumentum megléte önmagában, hanem hogy **mind a tulajdonos, mind az AI
+  teljes mértékben átlássa**, mit fog implementálni — minden aggregátumot, invariánst,
+  állapotátmenetet, domain eventet és modulközi kapcsolatot, mielőtt egyetlen sor C# kód
+  megszületne. Ha a tervezési dokumentum bármely pontja homályos vagy alulspecifikált
+  ahhoz, hogy egyértelműen implementálható legyen, az **blokkoló hiba a tervezésben**, nem
+  olyasmi, amit majd "menet közben kitalálunk".
+- Az AI feladata ebben a fázisban nem a gyors jóváhagyás, hanem a szigorú, apró
+  részletekre is kiterjedő átvizsgálás (lásd a fenti "legyél kritikus" szabályt) —
+  hiányzó mezőt, tisztázatlan állapotátmenetet, ellentmondó invariánst, vagy nem
+  definiált modulközi kapcsolatot mindig jelezni kell, mielőtt a tervezési lépcső
+  lezártnak minősülne.
+- Az 5 lépcsős vízesés-mélységű módszertan (lásd pl. `docs/design/risk-register-design.md`
+  fejléce) ennek az elvnek a konkrét megvalósítási kerete — minden új modul tervezésekor
+  ugyanezt a mélységet és sorrendet kell követni, nem csak a RiskRegisternél.
+
+---
+
 ## Mit épít ez a projekt?
 
 Vállalati kockázatelemző és -kezelő SaaS platform. Segít cégeknek azonosítani, értékelni, nyomon követni és kezelni üzleti kockázataikat – több kockázati területen (IT, pénzügyi, ESG, operacionális, megfelelőségi) egyidejűleg.

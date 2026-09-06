@@ -57,6 +57,9 @@ builder.Services.AddSingleton<IClaimsTransformation, KeycloakClaimsTransformatio
 // Multitenancy – Phase 1: egyetlen fix TenantId
 builder.Services.AddScoped<ITenantContext, FixedTenantContext>();
 
+// ICurrentUserContext (Organization modulban regisztrálva) HttpContext-hez fér hozzá
+builder.Services.AddHttpContextAccessor();
+
 // ModuleNotLicensedException → 403 ProblemDetails
 builder.Services.AddExceptionHandler<ModuleNotLicensedExceptionHandler>();
 builder.Services.AddProblemDetails();

@@ -1,9 +1,16 @@
-# Risk Analyzer – Feladatlista (TASKS.md)
+# REZILIO – Feladatlista (TASKS.md)
 
 > **Státusz jelölések:** `[ ]` Todo · `[~]` In Progress · `[x]` Done · `[!]` Blocker  
-> **Utolsó frissítés:** 2026-08-19  
+> **Utolsó frissítés:** 2026-09-03 — cím REZILIO-ra javítva; EPIC 1 story-k (1.1, 1.6, 1.7)
+> jegyzettel kiegészítve a RiskRegister/Assessment/Treatment modulhatár tisztázása miatt
+> (lásd `docs/design/risk-register-design.md` és `docs/SPEC.md` §4.1).  
 > **Branch névképzési konvenció:** lásd `docs/CLAUDE.md` → Branch névképzési stratégia  
 > **Verziókezelés:** SemVer 2.0, CHANGELOG.md – lásd `docs/ADR-014-versioning.md`
+> **Hatókör:** Ez a dokumentum kizárólag a backend (`Rezilio` repo) story-it
+> tartalmazza. A frontend (`rezilio-web` repo) story-i a `rezilio-web/docs/TASKS.md`-ben
+> vannak, ugyanazzal a story-azonosítóval hivatkozva egymásra (pl. Story 1.4 a frontend
+> dokumentumban a Story 1.1-1.3 backend RiskRegister API-jához tartozó UI). Szétválasztva:
+> 2026-09-02.
 
 ---
 
@@ -194,37 +201,11 @@
 ---
 
 #### Story 0.8 – Next.js projekt alap + i18n
-> **Branch:** `story/0.8-nextjs-base`  
-> Frontend projekt inicializálása, auth flow, többnyelvűség
-
-- [ ] Next.js 14+ projekt létrehozása (App Router)
-- [ ] TanStack Query konfiguráció
-- [ ] `next-intl` konfiguráció (middleware, `i18n.ts`, locale routing)
-- [ ] `messages/en.json` – alap struktúra (common, errors, modulonként szekciók)
-- [ ] `messages/hu.json` – magyar fordítás
-- [ ] Nyelv váltó komponens (felhasználói preferencia mentéssel)
-- [ ] Auth context (Keycloak OIDC redirect flow, JWT tárolás httpOnly cookie-ban)
-- [ ] Login / Logout oldal (Keycloak login page redirect)
-- [ ] Protected route wrapper
-- [ ] API kliens alap (`lib/api-client.ts`)
-- [ ] "Upgrade szükséges" komponens (deaktivált modulhoz, lokalizálva)
-- [ ] Tailwind CSS konfiguráció ellenőrzése (`tailwind.config.ts`, `globals.css`)
-- [ ] shadcn/ui inicializálása (`npx shadcn@latest init`)
-- [ ] Alap shadcn/ui komponensek telepítése: `Button`, `Card`, `Badge`, `Separator`
-
-**Elfogadási kritériumok:**
-- Bejelentkező gomb Keycloak login page-re navigál, sikeres login után visszairányít az alkalmazásba
-- Védett route-ra nem autentikált felhasználó nem juthat el (redirect login-ra)
-- Nyelv váltáskor az összes feliraton azonnal megjelenik a fordítás (oldal újratöltés nélkül)
-- `lib/api-client.ts` automatikusan csatolja a JWT tokent az Authorization headerbe
-- TypeScript hibák nélkül forduljon le
-
-**Megszorítások:**
-- ❌ Nincs JWT tárolás localStorage-ban – csak httpOnly cookie vagy memory
-- ❌ Nincs közvetlen `fetch()` hívás a komponensekben – `lib/api-client.ts` kell
-- ❌ Nincs hardcoded UI szöveg – minden `useTranslations()` hook-on keresztül
+> **Branch:** lásd a `rezilio-web` repo saját TASKS.md-jét
+> Frontend feladat — áthelyezve a `rezilio-web/docs/TASKS.md`-be, ugyanazzal a story-azonosítóval (0.8).
 
 ---
+
 
 #### Story 0.9 – Self-hosted GitHub Actions Runner (Hetzner)
 > **Branch:** `story/0.9-github-runner`  
@@ -479,57 +460,85 @@
 > van, handler-szintű előzetes ellenőrzés nem volt). Az ORG.8/ORG.9 TASKS.md bejegyzése
 > Validator-t is említ, de a kódban nem található FluentValidation validator sehol a projektben.
 
-- [ ] FluentValidation csomag hozzáadása + bekötése a Wolverine HTTP pipeline-ba (`Program.cs`)
-- [ ] `CreateCustomerValidator` / `UpdateCustomerValidator`
-- [ ] `CreateSupplierValidator` / `UpdateSupplierValidator`
-- [ ] `CreateKeyPersonValidator` / `UpdateKeyPersonValidator`
-- [ ] Code-egyediség előzetes ellenőrzés (409 Conflict) a `CreateOrganizationalUnitHandler`, `CreateCustomerHandler`, `CreateSupplierHandler` Create és Update handlerekben, az ItSystem/BusinessProcess mintája alapján
+- [x] FluentValidation csomag hozzáadása + bekötése a Wolverine HTTP pipeline-ba (`Program.cs`)
+- [x] `CreateCustomerValidator` / `UpdateCustomerValidator`
+- [x] `CreateSupplierValidator` / `UpdateSupplierValidator`
+- [x] `CreateKeyPersonValidator` / `UpdateKeyPersonValidator`
+- [x] Code-egyediség előzetes ellenőrzés (409 Conflict) a `CreateOrganizationalUnitHandler`, `CreateCustomerHandler`, `CreateSupplierHandler` Create és Update handlerekben, az ItSystem/BusinessProcess mintája alapján
 
 **Elfogadási kritériumok:**
 - Üres/hiányzó kötelező mezővel érkező Create/Update kérés 400 Bad Request-et ad, mezőszintű hibaüzenettel (nem 500-at, nem `NullReferenceException`-t)
 - Duplikált Code-dal érkező Create/Update kérés 409 Conflict-ot ad, nem nyers `DbUpdateException`-t
 
-**Megjegyzés:** namespace-inkonzisztencia (`Organization.*` vs `Rezilio.Modules.Organization.*` az ItSystem/BusinessProcess parancsoknál) külön, később rendezendő tech-debt — nem része ennek a fixnek.
-
 ---
 
+#### Fix ORG.F2 – OrganizationalUnit validátor hiánya
+> **Branch:** `fix/org-unit-validator`
+> Utólagos javítás: az ORG.F1 öt entitást (Customer, Supplier, KeyPerson, ItSystem,
+> BusinessProcess) lefedett FluentValidation validátorral, de az `OrganizationalUnit`
+> kimaradt belőle. A Code-egyediség ellenőrzés (409 Conflict) ezzel szemben már megvan
+> a `CreateOrganizationalUnitHandler`-ben — csak a mezőszintű validáció hiányzik.
+
+- [ ] `CreateOrganizationalUnitValidator` / `UpdateOrganizationalUnitValidator`
+
+**Elfogadási kritériumok:**
+- Üres/hiányzó kötelező mezővel (`Name`, `Code`) érkező Create/Update kérés 400 Bad Request-et ad, mezőszintű hibaüzenettel
+
+---
 ### EPIC-ORG / Sprint 2c – Organization Frontend
 
 #### Story ORG.10 – Organization modul UI
-> **Branch:** `story/org.10-organization-ui`  
-> Listázó, részletező és import oldalak minden entity típushoz
-
-- [ ] Organization navigáció a sidebarban (Szervezet, Helyszínek, Ügyfelek, Beszállítók, Kulcsszemélyek, IT Rendszerek, Folyamatok)
-- [ ] Generikus lista komponens (keresés, lapozás, szűrők, aktív/inaktív toggle)
-- [ ] Generikus részletező oldal
-- [ ] Import flow komponens (újrahasználható minden entity típushoz):
-  - Template letöltés gomb
-  - Fájl feltöltés (drag & drop + fájlválasztó)
-  - Validációs eredmény preview tábla (hibás sorok piros, helyes sorok zöld)
-  - Megerősítő gomb + eredmény összefoglaló
-- [ ] OrganizationalUnit hierarchia fa nézet
-- [ ] `messages/en.json` és `messages/hu.json` bővítése (Organization szekció)
-
-**Elfogadási kritériumok:**
-- Az import flow minden lépése működik end-to-end (template le → feltöltés → preview → megerősítés)
-- Hibás import esetén a felhasználó sor- és mezőszintű hibaüzenetet lát
-- Csak sikeres validáció után aktív a "Megerősítés" gomb
-- Az OrganizationalUnit fa megjelenítés indentált, összecsuktható
-- Minden szöveg `useTranslations()` hook-on keresztül, magyar és angol fordítással
-
-**Megszorítások:**
-- Maximálisan 5000 sorós import fájl fogadható el a UI-on (felette figyelmeztetés)
-- A lista oldalon maximum 100 elem jelenik meg lapozás nélkül
+> **Branch:** lásd a `rezilio-web` repo saját TASKS.md-jét
+> Frontend feladat — áthelyezve a `rezilio-web/docs/TASKS.md`-be, ugyanazzal a story-azonosítóval (ORG.10).
 
 ---
+
+#### Story ORG.11 – Create/Edit űrlapok (slide-over panel)
+> **Branch:** lásd a `rezilio-web` repo saját TASKS.md-jét
+> Frontend feladat — a `rezilio-web/TASKS.md`-ben követve, ugyanazzal a story-azonosítóval (ORG.11).
+> Kezdetben nem szerepelt ebben a backend TASKS.md-ben (tisztán frontend munka), utólag felvéve
+> a story-számozás szinkronban tartása érdekében (2026-09-02).
+
+---
+
+#### Story ORG.12 – Import job soronkénti hibarészletek
+> **Branch:** lásd a `rezilio-web` repo saját TASKS.md-jét
+> Frontend feladat — a `rezilio-web/TASKS.md`-ben követve, ugyanazzal a story-azonosítóval (ORG.12).
+> Backend előfeltétele a már meglévő `GetImportJobResults` végpont.
+
+---
+
+#### Story ORG.13 – Tenant Settings oldal
+> **Branch:** lásd a `rezilio-web` repo saját TASKS.md-jét
+> Frontend feladat — a `rezilio-web/TASKS.md`-ben követve, ugyanazzal a story-azonosítóval (ORG.13).
+> Backend előfeltétele a már meglévő `GetTenantSettings`/`UpdateTenantSettings`/`AddSupportedLanguage`.
+
+---
+
+#### Story ORG.14 – Owner/Person picker mezők
+> **Branch:** lásd a `rezilio-web` repo saját TASKS.md-jét
+> Frontend feladat — a `rezilio-web/TASKS.md`-ben követve, ugyanazzal a story-azonosítóval (ORG.14).
+> Ehhez a storyhoz backend munka is tartozott: `CreateItSystemValidator`/`UpdateItSystemValidator` és
+> `CreateBusinessProcessValidator`/`UpdateBusinessProcessValidator` (OwnerId → KeyPerson FK-ellenőrzéssel) —
+> ezek a validátorok elkészültek, lásd a modul dokumentációt (`docs/modules/organization.md`).
+
+---
+
+#### Story LIC.1 – Licencing admin műveletek
+> **Branch:** lásd a `rezilio-web` repo saját TASKS.md-jét
+> Frontend feladat — a `rezilio-web/TASKS.md`-ben követve, ugyanazzal a story-azonosítóval (LIC.1).
+> Backend előfeltétele a már meglévő `ActivateModule`/`DeactivateModule`/`StartTrial` végpontok.
+
+---
+
 
 ### FIX – Organization modul: TenantId enforcement handler-szinten
 > **Branch:** `fix/org-tenant-context-enforcement`
 
-- [ ] Minden Organization Create/Update/Delete/Get-by-id/Get-by-tenant handler az ITenantContext.TenantId-t
+- [x] Minden Organization Create/Update/Delete/Get-by-id/Get-by-tenant handler az ITenantContext.TenantId-t
       használja szűrésre/létrehozásra, nem a kliens által küldött TenantId mezőt/paramétert
-- [ ] 1. csoport: OrganizationalUnit, Customer, Supplier, KeyPerson
-- [ ] 2. csoport: ItSystem, BusinessProcess (validátorokkal együtt, külön kör)
+- [x] 1. csoport: OrganizationalUnit, Customer, Supplier, KeyPerson
+- [x] 2. csoport: ItSystem, BusinessProcess (validátorokkal együtt, külön kör)
 
 **Megjegyzés:** audit során feltárt hiányosság (nem story/4.16 scope) — a kliens által küldött
 TenantId mező a Command/Query rekordokban marad (nem törjük a frontendet), de a szerver
@@ -540,8 +549,8 @@ mostantól nem bízik meg benne.
 ### FIX – KeyPerson.Code mező bevezetése (Owner-matching pontosítása)
 > **Branch:** `fix/org-keyperson-code-field`
 
-- [ ] KeyPerson entitáshoz Code mező (mint a többi entitásnál), egyedi (TenantId, Code) index
-- [ ] Owner-matching importnál Code alapján, nem Name alapján (audit során talált, dokumentált limitáció)
+- [x] KeyPerson entitáshoz Code mező (mint a többi entitásnál), egyedi (TenantId, Code) index
+- [x] Owner-matching importnál Code alapján, nem Name alapján (audit során talált, dokumentált limitáció)
 
 ---
 
@@ -555,15 +564,26 @@ mostantól nem bízik meg benne.
 
 ### EPIC-1 / Sprint 3 – RiskRegister API
 
+> **Megjegyzés (2026-09-03):** a Sprint 3–5 story-i (1.1–1.3, 1.6, 1.7) mind egyetlen fizikai
+> `RiskRegister` modulba tartoznak, három aggregátum gyökérrel (`Risk`, `Assessment`,
+> `TreatmentPlan`) egy közös `DbContext`-tel — nem külön modulok. A sprint-bontás és a
+> Story-számozás munkaszervezési okból marad külön (más-más sprint, más branch), de ez nem
+> jelent fizikai kód-szétválasztást. Lásd `docs/design/risk-register-design.md` és
+> `docs/SPEC.md` §4.1.
+
 #### Story 1.1 – Risk aggregate és domain
 > **Branch:** `story/1.1-risk-aggregate`
 
 - [ ] `Risk` aggregate (Id, TenantId, DomainId, Title, Description, Category, OwnerId, Status)
 - [ ] `RiskStatus` enum (Draft, Active, UnderReview, Treated, Closed, Archived)
-- [ ] `RiskCategory` value object
-- [ ] `RiskDomain` entitás (IT, Financial, ESG stb.)
+- [ ] `RiskDomain` enum (IT, Financial, Operational, Strategic, Reputational, ThirdParty, ESG
+      stb. — végleges lista és elnevezés a `docs/design/risk-register-design.md` 2. lépcsőjén
+      dől el; a korábbi "RiskCategory value object" / "RiskDomain entitás" megnevezés
+      elavult, lásd a tervezési dokumentum §1.16/1. pontját: fix enum, nem bővíthető
+      katalógus)
 - [ ] `Migrations/` mappa létrehozása
-- [ ] `RisksDbContext` + migráció
+- [ ] `RiskRegisterDbContext` + migráció (a modul közös `DbContext`-je — `Assessment` és
+      `TreatmentPlan` is ebben él, nem külön `AssessmentDbContext`/`TreatmentDbContext`)
 
 **Elfogadási kritériumok:**
 - `Risk` aggregate invariánsai védve: nem archivált kockázat nem zárható le közvetlenül (státuszgép)
@@ -607,38 +627,27 @@ mostantól nem bízik meg benne.
 ### EPIC-1 / Sprint 4 – RiskRegister UI
 
 #### Story 1.4 – Kockázat lista és kezelés
-> **Branch:** `story/1.4-risk-list-ui`
-
-- [ ] Kockázat lista oldal (táblázat, szűrés, keresés, lapozás)
-- [ ] Kockázat részletező oldal
-- [ ] Kockázat létrehozás / szerkesztés form
-- [ ] Kockázat archiválás / törlés
-- [ ] RiskDomain selector (IT, Financial stb.)
-- [ ] Risk owner hozzárendelés UI (KeyPerson listából)
-
-**Elfogadási kritériumok:**
-- Kockázat létrehozható, szerkeszthető, archiválható a UI-on keresztül
-- A lista szűrhető domain és státusz szerint, kereshető szövegre
-- Nem engedélyezett műveletek (pl. Viewer role archiválás) gombjai inaktívak vagy rejtettek
+> **Branch:** lásd a `rezilio-web` repo saját TASKS.md-jét
+> Frontend feladat — áthelyezve a `rezilio-web/docs/TASKS.md`-be, ugyanazzal a story-azonosítóval (1.4).
 
 ---
+
 
 #### Story 1.5 – Alap dashboard
-> **Branch:** `story/1.5-basic-dashboard`
-
-- [ ] Kockázatok státusz szerinti összesítése (számok, badge-ek)
-- [ ] Legutóbb módosított kockázatok lista
-- [ ] Navigációs sidebar modulokkal (aktív/inaktív állapottal)
-
-**Elfogadási kritériumok:**
-- Dashboard adatai valós idejű API hívásokból jönnek (nem hardcoded)
-- Inaktív modul a sidebarban szürkén jelenik meg, kattintásra "Upgrade szükséges" komponenst mutat
+> **Branch:** lásd a `rezilio-web` repo saját TASKS.md-jét
+> Frontend feladat — áthelyezve a `rezilio-web/docs/TASKS.md`-be, ugyanazzal a story-azonosítóval (1.5).
 
 ---
 
-### EPIC-1 / Sprint 5 – Assessment + Treatment API
 
-#### Story 1.6 – Assessment modul
+### EPIC-1 / Sprint 5 – Assessment + Treatment (RiskRegister modul aggregátumai)
+
+> **Megjegyzés (2026-09-03):** "Assessment" és "Treatment" itt story-/sprint-elnevezés, nem
+> önálló fizikai modul — mindkettő a `RiskRegister` modul aggregátuma. Licencelési szinten
+> továbbra is külön `ModuleType` enum-érték (`ModuleType.Assessment`, `ModuleType.Treatment`)
+> marad, ez a fizikai szervezést nem érinti.
+
+#### Story 1.6 – Assessment aggregátum
 > **Branch:** `story/1.6-assessment-module`
 
 - [ ] `Assessment` aggregate (RiskId, LikelihoodScore, ImpactScore, RiskScore, Type)
@@ -654,7 +663,7 @@ mostantól nem bízik meg benne.
 
 ---
 
-#### Story 1.7 – Treatment modul
+#### Story 1.7 – Treatment (TreatmentPlan aggregátum)
 > **Branch:** `story/1.7-treatment-module`
 
 - [ ] `TreatmentPlan` aggregate + `Control` entity + `Action` entity
@@ -672,34 +681,18 @@ mostantól nem bízik meg benne.
 ### EPIC-1 / Sprint 6 – Assessment + Treatment UI
 
 #### Story 1.8 – Assessment UI
-> **Branch:** `story/1.8-assessment-ui`
-
-- [ ] Értékelési form (likelihood × impact slider/selector)
-- [ ] Kockázati hőtérkép vizualizáció (5×5, Recharts/Nivo)
-- [ ] Inherens vs. reziduális kockázat megjelenítés
-- [ ] Értékelési előzmények timeline
-
-**Elfogadási kritériumok:**
-- A hőtérkép vizuálisan helyes (piros = magas kockázat, zöld = alacsony)
-- Kockázatra kattintva a térkép celláján a részletező oldal nyílik meg
-- Inherens és reziduális értékelés egymás mellett megjelenítve
+> **Branch:** lásd a `rezilio-web` repo saját TASKS.md-jét
+> Frontend feladat — áthelyezve a `rezilio-web/docs/TASKS.md`-be, ugyanazzal a story-azonosítóval (1.8).
 
 ---
+
 
 #### Story 1.9 – Treatment UI
-> **Branch:** `story/1.9-treatment-ui`
-
-- [ ] Kezelési terv oldal (stratégia, kontrollok, akciók)
-- [ ] Kontrollok listája + státusz kezelés
-- [ ] Akciólista, felelős, határidő megjelenítés
-- [ ] Lejárt akciók kiemelése
-
-**Elfogadási kritériumok:**
-- Lejárt akciók piros kiemelést kapnak
-- Kontroll státusz módosítható drag-and-drop vagy gombokkal
-- Akció létrehozásakor kötelező a felelős személy és a határidő
+> **Branch:** lásd a `rezilio-web` repo saját TASKS.md-jét
+> Frontend feladat — áthelyezve a `rezilio-web/docs/TASKS.md`-be, ugyanazzal a story-azonosítóval (1.9).
 
 ---
+
 
 ## EPIC 2 – Prémium I. (Monitoring + Incidents)
 
@@ -726,15 +719,11 @@ mostantól nem bízik meg benne.
 ---
 
 ### EPIC-2 / Sprint 8 – Monitoring UI
-> **Branch:** `story/2.8-monitoring-ui`
-
-- [ ] KRI dashboard, trend grafikon, küszöbérték beállítás UI, felülvizsgálati naptár
-
-**Elfogadási kritériumok:**
-- Küszöbérték-sértés vizuálisan kiemelve a dashboardon (piros badge)
-- Trend grafikon legalább 30 napos adatot jelenít meg
+> **Branch:** lásd a `rezilio-web` repo saját TASKS.md-jét
+> Frontend feladat — áthelyezve a `rezilio-web/docs/TASKS.md`-be, ugyanazzal a story-azonosítóval (8).
 
 ---
+
 
 ### EPIC-2 / Sprint 9 – Incidents API
 > **Branch:** `story/2.9-incidents-api`
@@ -750,16 +739,11 @@ mostantól nem bízik meg benne.
 ---
 
 ### EPIC-2 / Sprint 10 – Incidents UI + Licensing UI
-> **Branch:** `story/2.10-incidents-licensing-ui`
-
-- [ ] Incidensbejelentő form, incidens–kockázat kapcsolat vizualizáció
-- [ ] Licensing admin oldal, trial indítás UI, "Upgrade szükséges" flow
-
-**Elfogadási kritériumok:**
-- Incidens–kockázat kapcsolat grafikusan megjelenítve
-- Admin csak `Admin` role-lal látja a licensing oldalt
+> **Branch:** lásd a `rezilio-web` repo saját TASKS.md-jét
+> Frontend feladat — áthelyezve a `rezilio-web/docs/TASKS.md`-be, ugyanazzal a story-azonosítóval (10).
 
 ---
+
 
 ## EPIC 3 – Prémium II. (Compliance + Reporting)
 
@@ -783,15 +767,11 @@ mostantól nem bízik meg benne.
 ---
 
 ### EPIC-3 / Sprint 12 – Compliance UI
-> **Branch:** `story/3.12-compliance-ui`
-
-- [ ] Framework selector, követelmény–kontroll mapping UI, gap vizualizáció, státusz összefoglaló
-
-**Elfogadási kritériumok:**
-- A gap vizualizáció százalékos lefedettséget mutat keretrendszerenként
-- Mapping drag-and-drop vagy többlépéses formmal elvégezhető
+> **Branch:** lásd a `rezilio-web` repo saját TASKS.md-jét
+> Frontend feladat — áthelyezve a `rezilio-web/docs/TASKS.md`-be, ugyanazzal a story-azonosítóval (12).
 
 ---
+
 
 ### EPIC-3 / Sprint 13 – Reporting API
 > **Branch:** `story/3.13-reporting-api`
@@ -812,14 +792,11 @@ mostantól nem bízik meg benne.
 ---
 
 ### EPIC-3 / Sprint 14 – Reporting UI + ESG alap
-> **Branch:** `story/3.14-reporting-esgesl-ui`
-
-- [ ] Riport generáló oldal, ütemezett riportok kezelése, ESG modul alap struktúra
-
-**Elfogadási kritériumok:**
-- A riport generálás folyamata állapotjelzővel mutatja a haladást (generálás alatt → kész → letölthető)
+> **Branch:** lásd a `rezilio-web` repo saját TASKS.md-jét
+> Frontend feladat — áthelyezve a `rezilio-web/docs/TASKS.md`-be, ugyanazzal a story-azonosítóval (14).
 
 ---
+
 
 ## EPIC 4 – Enterprise + SaaS
 

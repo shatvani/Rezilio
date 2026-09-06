@@ -1,6 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Rezilio.Modules.Organization.Application.Services;
+using Rezilio.Modules.Organization.Infrastructure;
 using Rezilio.Modules.Organization.Infrastructure.Excel;
+using Rezilio.SharedKernel.Auth;
 
 namespace Rezilio.Modules.Organization;
 
@@ -16,6 +18,9 @@ public static class OrganizationModule
 
         services.AddSingleton(dbContextOptions);
         services.AddScoped<OrganizationDbContext>();
+
+        // Identitás-kötés: Keycloak user ↔ KeyPerson (ld. ICurrentUserContext doc-comment)
+        services.AddScoped<ICurrentUserContext, CurrentUserContext>();
 
         // Excel infrastruktúra
         services.AddScoped<IExcelTemplateGenerator, ExcelTemplateGenerator>();
