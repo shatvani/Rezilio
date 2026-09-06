@@ -253,6 +253,9 @@ namespace Rezilio.Modules.Organization.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -272,6 +275,10 @@ namespace Rezilio.Modules.Organization.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<string>("UserId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("TenantId");
@@ -280,6 +287,10 @@ namespace Rezilio.Modules.Organization.Infrastructure.Migrations
                         .IsUnique();
 
                     b.HasIndex("TenantId", "OrgUnitId");
+
+                    b.HasIndex("TenantId", "UserId")
+                        .IsUnique()
+                        .HasFilter("\"UserId\" IS NOT NULL");
 
                     b.ToTable("KeyPersons");
                 });
