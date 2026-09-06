@@ -33,23 +33,22 @@ public sealed class CreateAssessmentHandler(
             ebitdaBaselineSnapshot = lookup.AnnualEbitda;
         }
 
+        var inputs = new AssessmentScoreInputs(
+            command.InherentLikelihood,
+            command.InherentImpact,
+            command.ResidualLikelihood,
+            command.ResidualImpact,
+            command.TargetLikelihood,
+            command.TargetImpact,
+            estimatedFinancialImpact,
+            ebitdaBaselineSnapshot,
+            command.ImpactContextOrgUnitId,
+            command.ImpactContextBusinessProcessId);
+
         Assessment assessment;
         try
         {
-            assessment = Assessment.Create(
-                tenantId,
-                command.RiskId,
-                command.InherentLikelihood,
-                command.InherentImpact,
-                command.ResidualLikelihood,
-                command.ResidualImpact,
-                command.TargetLikelihood,
-                command.TargetImpact,
-                estimatedFinancialImpact,
-                ebitdaBaselineSnapshot,
-                command.ImpactContextOrgUnitId,
-                command.ImpactContextBusinessProcessId,
-                command.AssessedBy);
+            assessment = Assessment.Create(tenantId, command.RiskId, inputs, command.AssessedBy);
         }
         catch (InvalidOperationException ex)
         {

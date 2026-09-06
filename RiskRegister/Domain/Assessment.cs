@@ -6,6 +6,25 @@ using Rezilio.SharedKernel.DDD.VOs;
 namespace Rezilio.Modules.RiskRegister.Domain;
 
 /// <summary>
+/// Paraméter-objektum a Create/Update/SetScoresAndEbitda közös bemeneteihez (ld.
+/// SonarCloud "Method has N parameters" figyelmeztetés, 2026-09-06 — a metódusok
+/// eredetileg 8-13 pozicionális paramétert vettek át, ami a 7-es limitet átlépte).
+/// Az ImpactContextOrgUnitId/ImpactContextBusinessProcessId kölcsönös kizárását az
+/// aggregátum (EnsureMutuallyExclusiveImpactContext) ellenőrzi, nem ez a record.
+/// </summary>
+public sealed record AssessmentScoreInputs(
+    int InherentLikelihood,
+    int InherentImpact,
+    int ResidualLikelihood,
+    int ResidualImpact,
+    int? TargetLikelihood,
+    int? TargetImpact,
+    Money? EstimatedFinancialImpact,
+    Money? EbitdaBaselineSnapshot,
+    Guid? ImpactContextOrgUnitId,
+    Guid? ImpactContextBusinessProcessId);
+
+/// <summary>
 /// Egy adott Risk egy időpillanatban végzett kockázatértékelése — Inherens/Reziduális/
 /// Cél Likelihood-Impact-Score hármasokkal, opcionális pénzügyi hatásbecsléssel és
 /// EBITDA-arányos kontextussal, valamint egy külön jóváhagyási munkafolyamattal
@@ -65,39 +84,22 @@ public sealed class Assessment : AuditableAggregateRoot<Guid>
 
     private Assessment() { }
 
-    public static Assessment Create(
-        Guid tenantId,
-        Guid riskId,
-        int inherentLikelihood,
-        int inherentImpact,
-        int residualLikelihood,
-        int residualImpact,
-        int? targetLikelihood,
-        int? targetImpact,
-        Money? estimatedFinancialImpact,
-        Money? ebitdaBaselineSnapshot,
-        Guid? impactContextOrgUnitId,
-        Guid? impactContextBusinessProcessId,
-        Guid assessedBy)
+    public static Assessment Create(Guid tenantId, Guid riskId, AssessmentScoreInputs inputs, Guid assessedBy)
     {
-        EnsureMutuallyExclusiveImpactContext(impactContextOrgUnitId, impactContextBusinessProcessId);
+        EnsureMutuallyExclusiveImpactContext(inputs.ImpactContextOrgUnitId, inputs.ImpactContextBusinessProcessId);
 
         var assessment = new Assessment
         {
             Id = Guid.NewGuid(),
             TenantId = tenantId,
             RiskId = riskId,
-            ImpactContextOrgUnitId = impactContextOrgUnitId,
-            ImpactContextBusinessProcessId = impactContextBusinessProcessId,
+            ImpactContextOrgUnitId = inputs.ImpactContextOrgUnitId,
+            ImpactContextBusinessProcessId = inputs.ImpactContextBusinessProcessId,
             AssessedBy = assessedBy,
             ApprovalStatus = ApprovalStatus.Draft
         };
 
-        assessment.SetScoresAndEbitda(
-            inherentLikelihood, inherentImpact,
-            residualLikelihood, residualImpact,
-            targetLikelihood, targetImpact,
-            estimatedFinancialImpact, ebitdaBaselineSnapshot);
+        assessment.SetScoresAndEbitda(inputs);
 
         assessment.RaiseDomainEvent(new AssessmentCreated(assessment.Id, tenantId, riskId));
         return assessment;
@@ -108,33 +110,19 @@ public sealed class Assessment : AuditableAggregateRoot<Guid>
     /// külön ReopenAssessment Commanddal/Reopen() metódussal történik, 2026-09-06-i döntés,
     /// nem ez a metódus feladata).
     /// </summary>
-    public void Update(
-        int inherentLikelihood,
-        int inherentImpact,
-        int residualLikelihood,
-        int residualImpact,
-        int? targetLikelihood,
-        int? targetImpact,
-        Money? estimatedFinancialImpact,
-        Money? ebitdaBaselineSnapshot,
-        Guid? impactContextOrgUnitId,
-        Guid? impactContextBusinessProcessId)
+    public void Update(AssessmentScoreInputs inputs)
     {
         if (ApprovalStatus != ApprovalStatus.Draft)
         {
             throw new InvalidOperationException("Az Assessment csak Draft állapotban módosítható.");
         }
 
-        EnsureMutuallyExclusiveImpactContext(impactContextOrgUnitId, impactContextBusinessProcessId);
+        EnsureMutuallyExclusiveImpactContext(inputs.ImpactContextOrgUnitId, inputs.ImpactContextBusinessProcessId);
 
-        ImpactContextOrgUnitId = impactContextOrgUnitId;
-        ImpactContextBusinessProcessId = impactContextBusinessProcessId;
+        ImpactContextOrgUnitId = inputs.ImpactContextOrgUnitId;
+        ImpactContextBusinessProcessId = inputs.ImpactContextBusinessProcessId;
 
-        SetScoresAndEbitda(
-            inherentLikelihood, inherentImpact,
-            residualLikelihood, residualImpact,
-            targetLikelihood, targetImpact,
-            estimatedFinancialImpact, ebitdaBaselineSnapshot);
+        SetScoresAndEbitda(inputs);
 
         // Nincs AssessmentUpdated esemény — a §2.2 lezárt domain-event lista nem
         // tartalmaz ilyet (csak Created/Submitted/Approved/Rejected/Reopened), mert az
@@ -215,27 +203,19 @@ public sealed class Assessment : AuditableAggregateRoot<Guid>
         RaiseDomainEvent(new AssessmentReopened(Id, TenantId, RiskId));
     }
 
-    private void SetScoresAndEbitda(
-        int inherentLikelihood,
-        int inherentImpact,
-        int residualLikelihood,
-        int residualImpact,
-        int? targetLikelihood,
-        int? targetImpact,
-        Money? estimatedFinancialImpact,
-        Money? ebitdaBaselineSnapshot)
+    private void SetScoresAndEbitda(AssessmentScoreInputs inputs)
     {
-        InherentLikelihood = inherentLikelihood;
-        InherentImpact = inherentImpact;
-        InherentScore = RiskScoreCalculator.CalculateScore(inherentLikelihood, inherentImpact);
+        InherentLikelihood = inputs.InherentLikelihood;
+        InherentImpact = inputs.InherentImpact;
+        InherentScore = RiskScoreCalculator.CalculateScore(inputs.InherentLikelihood, inputs.InherentImpact);
 
-        ResidualLikelihood = residualLikelihood;
-        ResidualImpact = residualImpact;
-        ResidualScore = RiskScoreCalculator.CalculateScore(residualLikelihood, residualImpact);
+        ResidualLikelihood = inputs.ResidualLikelihood;
+        ResidualImpact = inputs.ResidualImpact;
+        ResidualScore = RiskScoreCalculator.CalculateScore(inputs.ResidualLikelihood, inputs.ResidualImpact);
 
         // TargetScore csak akkor számítható, ha mindkét Target mező ki van töltve —
         // a kettő "együtt vagy sehogy" (ld. §2.2, opcionális céltűzés).
-        if (targetLikelihood is { } tl && targetImpact is { } ti)
+        if (inputs.TargetLikelihood is { } tl && inputs.TargetImpact is { } ti)
         {
             TargetLikelihood = tl;
             TargetImpact = ti;
@@ -248,9 +228,9 @@ public sealed class Assessment : AuditableAggregateRoot<Guid>
             TargetScore = null;
         }
 
-        EstimatedFinancialImpact = estimatedFinancialImpact;
-        EbitdaBaselineSnapshot = ebitdaBaselineSnapshot;
-        EbitdaImpactPercentage = EbitdaImpactCalculator.Calculate(estimatedFinancialImpact, ebitdaBaselineSnapshot);
+        EstimatedFinancialImpact = inputs.EstimatedFinancialImpact;
+        EbitdaBaselineSnapshot = inputs.EbitdaBaselineSnapshot;
+        EbitdaImpactPercentage = EbitdaImpactCalculator.Calculate(inputs.EstimatedFinancialImpact, inputs.EbitdaBaselineSnapshot);
     }
 
     private static void EnsureMutuallyExclusiveImpactContext(Guid? orgUnitId, Guid? businessProcessId)

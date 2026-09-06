@@ -36,19 +36,21 @@ public sealed class UpdateAssessmentHandler(
             ebitdaBaselineSnapshot = lookup.AnnualEbitda;
         }
 
+        var inputs = new AssessmentScoreInputs(
+            command.InherentLikelihood,
+            command.InherentImpact,
+            command.ResidualLikelihood,
+            command.ResidualImpact,
+            command.TargetLikelihood,
+            command.TargetImpact,
+            estimatedFinancialImpact,
+            ebitdaBaselineSnapshot,
+            command.ImpactContextOrgUnitId,
+            command.ImpactContextBusinessProcessId);
+
         try
         {
-            assessment.Update(
-                command.InherentLikelihood,
-                command.InherentImpact,
-                command.ResidualLikelihood,
-                command.ResidualImpact,
-                command.TargetLikelihood,
-                command.TargetImpact,
-                estimatedFinancialImpact,
-                ebitdaBaselineSnapshot,
-                command.ImpactContextOrgUnitId,
-                command.ImpactContextBusinessProcessId);
+            assessment.Update(inputs);
         }
         catch (InvalidOperationException ex)
         {
