@@ -22,6 +22,72 @@ namespace RiskRegister.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Rezilio.Modules.RiskRegister.Domain.Finding", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CorrelationId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateTimeOffset?>("LastModified")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid?>("LinkedRiskId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("OwnerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Severity")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LinkedRiskId");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TenantId", "OwnerId");
+
+                    b.HasIndex("TenantId", "Status");
+
+                    b.ToTable("findings", (string)null);
+                });
+
             modelBuilder.Entity("Rezilio.Modules.RiskRegister.Domain.Risk", b =>
                 {
                     b.Property<Guid>("Id")
@@ -94,6 +160,14 @@ namespace RiskRegister.Migrations
                     b.HasIndex("TenantId", "Status");
 
                     b.ToTable("risks", (string)null);
+                });
+
+            modelBuilder.Entity("Rezilio.Modules.RiskRegister.Domain.Finding", b =>
+                {
+                    b.HasOne("Rezilio.Modules.RiskRegister.Domain.Risk", null)
+                        .WithMany()
+                        .HasForeignKey("LinkedRiskId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Rezilio.Modules.RiskRegister.Domain.Risk", b =>

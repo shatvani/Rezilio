@@ -5,6 +5,7 @@ public sealed class RiskRegisterDbContext : DbContext
     public RiskRegisterDbContext(DbContextOptions<RiskRegisterDbContext> options) : base(options) { }
 
     public DbSet<Risk> Risks => Set<Risk>();
+    public DbSet<Finding> Findings => Set<Finding>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -33,6 +34,30 @@ public sealed class RiskRegisterDbContext : DbContext
             entity.HasOne<Risk>()
                   .WithMany()
                   .HasForeignKey(e => e.CopiedFromRiskId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Finding>(entity =>
+        {
+            entity.ToTable("findings");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.TenantId).IsRequired();
+            entity.Property(e => e.Source).HasConversion<string>().HasMaxLength(30).IsRequired();
+            entity.Property(e => e.Description).IsRequired().HasMaxLength(2000);
+            entity.Property(e => e.Severity).HasConversion<string>().HasMaxLength(20).IsRequired();
+            entity.Property(e => e.Status).HasConversion<string>().HasMaxLength(20).IsRequired();
+            entity.Property(e => e.CreatedBy).HasMaxLength(200);
+            entity.Property(e => e.LastModifiedBy).HasMaxLength(200);
+            entity.Property(e => e.CorrelationId).HasMaxLength(100);
+
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => new { e.TenantId, e.Status });
+            entity.HasIndex(e => new { e.TenantId, e.OwnerId });
+
+            // LinkedRiskId FK a Risk-re — Restrict, mert nincs hard delete a modulban.
+            entity.HasOne<Risk>()
+                  .WithMany()
+                  .HasForeignKey(e => e.LinkedRiskId)
                   .OnDelete(DeleteBehavior.Restrict);
         });
     }

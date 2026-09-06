@@ -695,6 +695,10 @@ határidő. A `Finding` így egy **triázs-pont** a folyamat elején (lásd §1.
 - **`OwnerId?`** (→ `KeyPerson`, Organization modul, lásd 2.5 — **új, 2026-09-06, a
   "halasztott feladat" jelzés miatt szükséges**; nullability-szabályt lásd lent)
 
+**A `Severity` végleges v1 érték-lista** (rögzítve a 4. lépcsőn, 2026-09-06 — korábban
+csak a "Critical" érték szerepelt példaként a monitoring-küszöb szövegében): `Low`,
+`Medium`, `High`, `Critical` — a GRC-eszközöknél szokásos négyfokozatú skála.
+
 **Invariánsok:**
 - `Description` és `Source` kötelező.
 - Állapotátmenet csak sorban: `Open → Triaged`, majd `Triaged → Linked` VAGY
