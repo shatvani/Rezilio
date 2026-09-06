@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 using Rezilio.Modules.Organization.Application.Services;
-using Rezilio.Modules.Organization.Infrastructure;
 using Rezilio.Modules.Organization.Infrastructure.Excel;
 using Rezilio.SharedKernel.Auth;
 

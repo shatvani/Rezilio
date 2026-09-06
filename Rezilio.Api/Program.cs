@@ -9,6 +9,8 @@ using Rezilio.Modules.Licensing.Infrastructure;
 using Rezilio.Modules.Organization;
 using Rezilio.Modules.Organization.Domain;
 using Rezilio.Modules.Organization.Infrastructure;
+using Rezilio.Modules.RiskRegister;
+using Rezilio.Modules.RiskRegister.Infrastructure;
 using Rezilio.SharedKernel.DDD.VOs;
 using Rezilio.SharedKernel.Multitenancy;
 using Wolverine;
@@ -34,6 +36,7 @@ builder.Host.UseWolverine(opts =>
     // Licensing assembly handlereinek beregisztrálása
     opts.Discovery.IncludeAssembly(typeof(LicensingModule).Assembly);
     opts.Discovery.IncludeAssembly(typeof(OrganizationModule).Assembly);
+    opts.Discovery.IncludeAssembly(typeof(RiskRegisterModule).Assembly);
 
     opts.Policies.AddMiddleware<ModuleAccessBehavior>(
         chain => chain.MessageType?.Namespace?.StartsWith("Rezilio") == true
@@ -85,6 +88,8 @@ builder.Services.AddWolverineHttp();
 builder.Services.AddLicensingModule(connectionString);
 // --- Organization ---
 builder.Services.AddOrganizationModule(connectionString);
+// --- RiskRegister ---
+builder.Services.AddRiskRegisterModule(connectionString);
 // --- Lokalizáció ---
 builder.Services.AddLocalization(opts => opts.ResourcesPath = "Resources");
 
@@ -135,7 +140,9 @@ if (app.Environment.IsDevelopment())
         await orgDb.SaveChangesAsync();
     }
 
-    // TODO Story 1.1: RisksDbContext migráció
+    // RiskRegister migráció
+    var riskRegisterDb = scope.ServiceProvider.GetRequiredService<RiskRegisterDbContext>();
+    await riskRegisterDb.Database.MigrateAsync();
 }
 
 app.UseHealthChecks("/healthz");

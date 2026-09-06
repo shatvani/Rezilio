@@ -1,0 +1,10 @@
+global using Microsoft.AspNetCore.Authorization;
+global using Microsoft.AspNetCore.Http;
+global using Microsoft.AspNetCore.Mvc;
+global using Microsoft.EntityFrameworkCore;
+global using Rezilio.Modules.RiskRegister.Domain;
+global using Rezilio.Modules.RiskRegister.Infrastructure;
+global using Wolverine.Http;
+global using FluentValidation;
+global using Rezilio.SharedKernel.Multitenancy;
+global using Rezilio.SharedKernel.Auth;
