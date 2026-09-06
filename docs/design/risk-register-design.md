@@ -633,7 +633,11 @@ kockázatokat), nem egy diszkrét állapot, amiből ki-be lehet lépni.
 
 **Invariánsok:**
 - `Title`, `Description` és `Code` nem lehet üres; `Code` egyedi tenant szinten.
-- `Domain` csak érvényes `RiskDomain` enum-érték lehet.
+- `Domain` csak érvényes `RiskDomain` enum-érték lehet. **A végleges v1 érték-lista
+  (rögzítve a 4. lépcsőn, 2026-09-06, mivel korábban csak példaként voltak említve):**
+  `IT`, `Financial`, `ESG`, `Operational`, `RegulatoryExposure` (a §1.16/1 döntés szerint
+  átnevezve `Compliance`-ról, a `Compliance` modullal való névütközés elkerülése végett),
+  `ThirdParty`, `Strategic`, `Reputational`.
 - Állapotátmenet **kizárólag** a fenti táblázat gráfja mentén történhet.
 - `Archived` terminális állapot — onnan semmilyen átmenet nem engedélyezett.
 - `OwnerId` **nullable** — `Draft` állapotban lehet üres (pl. ha egy `Finding`-ból
@@ -690,6 +694,10 @@ határidő. A `Finding` így egy **triázs-pont** a folyamat elején (lásd §1.
 - `LinkedRiskId?` (kitöltve, ha `LinkFindingToRisk` megtörtént)
 - **`OwnerId?`** (→ `KeyPerson`, Organization modul, lásd 2.5 — **új, 2026-09-06, a
   "halasztott feladat" jelzés miatt szükséges**; nullability-szabályt lásd lent)
+
+**A `Severity` végleges v1 érték-lista** (rögzítve a 4. lépcsőn, 2026-09-06 — korábban
+csak a "Critical" érték szerepelt példaként a monitoring-küszöb szövegében): `Low`,
+`Medium`, `High`, `Critical` — a GRC-eszközöknél szokásos négyfokozatú skála.
 
 **Invariánsok:**
 - `Description` és `Source` kötelező.

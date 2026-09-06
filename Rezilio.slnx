@@ -21,6 +21,9 @@
   <Folder Name="/src/Modules/Organization/">
     <Project Path="Organization/Organization.csproj" Id="e48601eb-446d-443a-9c11-a32bb8ae7913" />
   </Folder>
+  <Folder Name="/src/Modules/RiskRegister/">
+    <Project Path="RiskRegister/RiskRegister.csproj" />
+  </Folder>
   <Folder Name="/test/">
     <Project Path="Rezilio.Tests/Rezilio.Tests.csproj" Id="cedfaa83-817b-4ed3-ad40-19f6e578cf58" />
   </Folder>

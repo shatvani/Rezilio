@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="WolverineFx.Http" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Rezilio.SharedKernel\Rezilio.SharedKernel.csproj" />
+  </ItemGroup>
+
+  <!-- Megjegyzés: a Licensing.csproj ProjectReference tudatosan NINCS itt — a
+       [RequiresModule(ModuleType.RiskRegister)] attribútum bekötése (a Licensing
+       modulra hivatkozna) egyelőre elmarad, ld. docs/design/risk-register-design.md
+       §2.8/§3.5 "Licensing.CheckModuleAccess vs. Wolverine-dispatch egységesítése" —
+       dokumentált, nem blokkoló technikai adósság. Ha ezt a jövőben bekötjük, itt
+       kell visszatenni a hivatkozást. -->
+
+
+</Project>

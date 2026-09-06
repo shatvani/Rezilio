@@ -31,4 +31,12 @@ public interface ICurrentUserContext
     /// (egyértelműen azonosítható) hozzá tartozó KeyPerson.
     /// </summary>
     Task<Guid?> GetKeyPersonIdAsync(CancellationToken ct = default);
+
+    /// <summary>
+    /// Igaz, ha a bejelentkezett felhasználónak van a megadott (Keycloak realm) szerepköre.
+    /// Rekord-szintű tulajdonos-ellenőrzéssel kombinálva használandó (ld. §3.5): a
+    /// szerepkör dönti el, MILYEN TÍPUSÚ műveletet végezhet valaki, a rekord-tulajdonos-
+    /// ellenőrzés pedig, hogy KONKRÉTAN AZON a rekordon.
+    /// </summary>
+    bool IsInRole(string role);
 }

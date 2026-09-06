@@ -1,7 +1,5 @@
 using System.Security.Claims;
-using Microsoft.AspNetCore.Http;
 using Rezilio.SharedKernel.Auth;
-using Rezilio.SharedKernel.Multitenancy;
 
 namespace Rezilio.Modules.Organization.Infrastructure;
 
@@ -33,6 +31,8 @@ public sealed class CurrentUserContext : ICurrentUserContext
     public string? UserId => Principal?.FindFirstValue(AppClaims.UserId);
 
     public string? Email => Principal?.FindFirstValue(AppClaims.Email);
+
+    public bool IsInRole(string role) => Principal?.IsInRole(role) ?? false;
 
     public async Task<Guid?> GetKeyPersonIdAsync(CancellationToken ct = default)
     {
